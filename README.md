@@ -1,20 +1,39 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Vampire: The Masquerade (5th Edition) — Интерактивный лист персонажа
 
-# Run and deploy your AI Studio app
+Интерактивный заполняемый лист персонажа по Vampire: the Masquerade 5й редакции. Сделано с использованием Google AI Studio. Использованы материалы с сайта Kindred Codex (https://vtm-5.com). Ссылка на веб-приложение: https://xysenya.github.io/vtm-5e-character-sheet/
 
-This contains everything you need to run your app locally.
+---
 
-View your app in AI Studio: https://ai.studio/apps/f3290b5a-d950-4d77-8974-77548882c2b9
+## Возможности
 
-## Run Locally
+- **Интерактивный бланк V5 (5 страниц)**:
+  - **Лист 1**: Основные сведения, кланы и стили охоты, треки Здоровья, Силы Воли, Человечности и Голода, Характеристики, Навыки и Дисциплины.
+  - **Лист 2**: Преимущества, Достоинства и Изъяны, характеристики Крови, Клановый изъян и Клановая мания.
+  - **Лист 3**: Биография, Внешность, История, Инвентарь и интерактивное кадрирование портрета персонажа.
+  - **Лист 4**: Заметки, Хроника и Дневник с поддержкой форматирования текста (Rich Text).
+  - **Лист 5**: Памятка ключевых правил V5.
+- **Встроенный дайсроллер**:
+  - Быстрый выбор пула при клике на характеристики и навыки на листе.
+  - Учёт обычных костей и костей Голода, критических успехов (Messy Critical), провалов (Bestial Failure) и траты Силы Воли.
+- **Кастомизация и удобство**:
+  - Настройка порядка полей шапки 3×3.
+  - Меню настройки внешнего вида и цветовых палитр бланка.
+  - Синхронизация персонажей с Google Drive и экспорт/импорт в формате JSON.
+  - Высокоточная печать на формат А4 и экспорт в чистый векторный PDF.
 
-**Prerequisites:**  Node.js
+## Локальный запуск
 
+1. Установите зависимости:
+   ```bash
+   npm install
+   ```
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+2. Запустите приложение для разработки:
+   ```bash
+   npm run dev
+   ```
+
+3. Сборка для GitHub Pages / Production:
+   ```bash
+   npm run build
+   ```

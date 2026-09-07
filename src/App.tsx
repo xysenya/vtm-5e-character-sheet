@@ -82,6 +82,16 @@ export default function App() {
     return createInitialCharacter();
   });
 
+  // Dynamic browser tab title: "[Имя персонажа] | VTM 5e - Лист персонажа"
+  useEffect(() => {
+    const charName = sheet.info?.name?.trim();
+    if (charName) {
+      document.title = `${charName} | VTM 5e - Лист персонажа`;
+    } else {
+      document.title = 'VTM 5e - Лист персонажа';
+    }
+  }, [sheet.info?.name]);
+
   // Print mode
   const [isInkSaver, setIsInkSaver] = useState<boolean>(false);
 
