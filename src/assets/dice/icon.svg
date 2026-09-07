@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="1000" height="1000" viewBox="0 0 1000 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <g transform="translate(70.206 46)">
+      <path d="M426.091 0L838.724 336.386L838.724 584.627L426.091 906.001L0 583.07L0 336.386L426.091 0Z" fill="none" stroke-width="30" stroke="#FFFFFF" transform="translate(9.794 0)" />
+      <line x1="0" y1="595" x2="267.5" y2="0" fill="none" stroke-width="30" stroke="#FFFFFF" stroke-linecap="square" transform="translate(168.294 16)" />
+      <line x1="0" y1="0" x2="240.5" y2="585.5" fill="none" stroke-width="30" stroke="#FFFFFF" stroke-linecap="square" transform="translate(435.794 16)" />
+      <path d="M20.9167 3.12268L90.2075 17.8705L176.147 36.162L435.627 166.009L670.549 27.8354L735.909 18.5526L854.536 1.70422L858.754 31.4061L680.643 56.7028L436.783 200.134L166.151 64.7065L0 29.3428L6.24531 0L20.9167 3.12268L20.9167 3.12268Z" fill="#FFFFFF" fill-rule="evenodd" transform="translate(0 562.206)" />
+      <line x1="0" y1="151.5" x2="0" y2="0" fill="none" stroke-width="30" stroke="#FFFFFF" stroke-linecap="square" transform="translate(434.294 745)" />
+    </g>
+  </g>
+</svg>

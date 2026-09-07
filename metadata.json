@@ -1,0 +1,6 @@
+{
+  "name": "VTM Character Sheet & Chronicle Vault",
+  "description": "Интерактивный лист персонажа Vampire: The Masquerade с авто-расчетом навыков, библиотекой способностей, клановым оформлением, печатью в PDF и облачной синхронизацией.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
