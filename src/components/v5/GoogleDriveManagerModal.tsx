@@ -160,7 +160,9 @@ export const GoogleDriveManagerModal: React.FC<GoogleDriveManagerModalProps> = (
       onClick={onClose}
     >
       <div
-        className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/95 overflow-hidden transition-all ring-1 ring-red-950/40"
+        role="dialog"
+        aria-modal="true"
+        className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/95 overflow-hidden transition-all ring-1 ring-red-950/40 vtm-modal-root"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Header: User Profile & Actions */}

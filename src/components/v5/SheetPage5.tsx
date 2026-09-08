@@ -3,9 +3,19 @@ import { SheetHeader, SectionDivider } from './SheetHeader';
 
 interface SheetPage5Props {
   isDark?: boolean;
+  accentColor?: string;
+  textColor?: string;
+  primaryTextColor?: string;
+  accentTextColor?: string;
 }
 
-export const SheetPage5: React.FC<SheetPage5Props> = ({ isDark = false }) => {
+export const SheetPage5: React.FC<SheetPage5Props> = ({
+  isDark = false,
+  accentColor,
+  textColor,
+  primaryTextColor,
+  accentTextColor,
+}) => {
   const cardBg = isDark
     ? 'bg-zinc-900/40 border-zinc-800'
     : 'bg-white/70 border-zinc-300 shadow-xs';
@@ -21,7 +31,14 @@ export const SheetPage5: React.FC<SheetPage5Props> = ({ isDark = false }) => {
           : '0 10px 30px -5px rgba(0, 0, 0, 0.15)',
       }}
     >
-      <SheetHeader pageTitle="Подсказки по правилам" themeMode={isDark ? 'dark' : 'light'} />
+      <SheetHeader
+        pageTitle="Подсказки по правилам"
+        themeMode={isDark ? 'dark' : 'light'}
+        accentColor={accentColor}
+        textColor={textColor}
+        primaryTextColor={primaryTextColor}
+        accentTextColor={accentTextColor}
+      />
 
       <div className="space-y-3.5 my-2 text-xs print-calib-p5-rules-stack">
             {/* ROW 1: DICE & HUNGER RULES */}

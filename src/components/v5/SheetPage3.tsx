@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { CharacterSheet, V5BioData } from '../../types';
+import { CLAN_THEMES } from '../../data/clans';
 import { SheetHeader, SectionDivider } from './SheetHeader';
 import { useIsPrinting } from '../../utils/useIsPrinting';
 import { PortraitCropModal } from '../PortraitCropModal';
@@ -13,6 +14,8 @@ interface SheetPage3Props {
   isDark?: boolean;
   bioHeight?: number;
   inventoryHeight?: number;
+  primaryTextColor?: string;
+  accentTextColor?: string;
 }
 
 export const SheetPage3: React.FC<SheetPage3Props> = ({
@@ -22,6 +25,8 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
   isDark = false,
   bioHeight = 280,
   inventoryHeight = 140,
+  primaryTextColor,
+  accentTextColor,
 }) => {
   const isPrinting = useIsPrinting();
   const ph = (text: string) => (isPrinting ? '' : text);
@@ -107,21 +112,24 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
   const availableXp = Math.max(0, bio.totalXp - bio.spentXp);
 
   return (
-    <div
-      className={`relative w-full max-w-[210mm] min-h-[297mm] mx-auto p-4 sm:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-3 print:p-0 print:m-0 print:max-w-full print:w-full print:min-h-0 print:h-auto print:overflow-visible flex flex-col justify-start ${
-        isDark ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800' : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
-      }`}
-      style={{
-        boxShadow: isDark
-          ? '0 10px 35px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(153, 27, 27, 0.1)'
-          : '0 10px 30px -5px rgba(0, 0, 0, 0.15)',
-      }}
-    >
-      <SheetHeader
-        pageTitle="Биография и Инвентарь"
-        themeMode={isDark ? 'dark' : 'light'}
-        useGraphicLogo={sheet.v5UseGraphicLogo}
-      />
+    <>
+      <div
+        className={`relative w-full max-w-[210mm] min-h-[297mm] mx-auto p-4 sm:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-3 print:p-0 print:m-0 print:max-w-full print:w-full print:min-h-0 print:h-auto print:overflow-visible flex flex-col justify-start ${
+          isDark ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800' : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
+        }`}
+        style={{
+          boxShadow: isDark
+            ? '0 10px 35px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(153, 27, 27, 0.1)'
+            : '0 10px 30px -5px rgba(0, 0, 0, 0.15)',
+        }}
+      >
+        <SheetHeader
+          pageTitle="Биография и Инвентарь"
+          themeMode={isDark ? 'dark' : 'light'}
+          useGraphicLogo={sheet.v5UseGraphicLogo}
+          primaryTextColor={primaryTextColor}
+          accentTextColor={accentTextColor}
+        />
 
       {/* TOP SECTION: PORTRAIT & XP (LEFT) + IDENTITY TABLE (RIGHT) */}
       <div className="grid grid-cols-1 sm:grid-cols-12 print:grid-cols-12 gap-5 print:gap-3 my-2 text-xs print-calib-p3-top-grid">
@@ -432,6 +440,7 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
           className={`w-full p-3 print:p-2 border rounded-xs font-serif text-xs transition-colors leading-relaxed print-white-bg print-calib-p3-inventory-editor ${inputBg}`}
         />
       </div>
+    </div>
 
       {/* Portrait Cropper Modal */}
       <PortraitCropModal
@@ -445,6 +454,6 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
         onSelectAnotherFile={() => fileInputRef.current?.click()}
         isDark={isDark}
       />
-    </div>
+    </>
   );
 };

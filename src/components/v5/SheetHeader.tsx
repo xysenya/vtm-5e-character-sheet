@@ -5,6 +5,10 @@ interface SheetHeaderProps {
   pageNumber?: number;
   themeMode?: 'light' | 'dark';
   useGraphicLogo?: boolean;
+  primaryTextColor?: string;
+  accentTextColor?: string;
+  accentColor?: string;
+  textColor?: string;
 }
 
 export const SheetHeader: React.FC<SheetHeaderProps> = ({
@@ -12,8 +16,16 @@ export const SheetHeader: React.FC<SheetHeaderProps> = ({
   pageNumber,
   themeMode = 'light',
   useGraphicLogo = false,
+  primaryTextColor,
+  accentTextColor,
+  accentColor,
+  textColor,
 }) => {
   const isDark = themeMode === 'dark';
+  // Primary text color for "ВАМПИРЫ"
+  const effectivePrimaryTextColor = primaryTextColor || textColor || (isDark ? '#f4f4f5' : '#18181b');
+  // Accent text color for "† М А С К А Р А Д †" (strictly depends on accent text, not clan)
+  const effectiveAccentTextColor = accentTextColor || (isDark ? '#dc2626' : '#881337');
 
   return (
     <header className="relative pt-2 pb-3 mb-3 print:pt-1 print:pb-1.5 print:mb-2 print-calib-header border-b-2 border-red-900/40 select-none overflow-hidden">
@@ -46,29 +58,51 @@ export const SheetHeader: React.FC<SheetHeaderProps> = ({
         ) : (
           <>
             <div className="flex items-center gap-3 print:gap-2.5">
-              <span className="text-red-700 text-lg sm:text-xl print:text-base print-calib-ankh select-none">☥</span>
+              <span
+                className="sheet-header-ankh text-lg sm:text-xl print:text-base print-calib-ankh select-none transition-colors duration-200"
+                style={{ color: effectiveAccentTextColor }}
+              >
+                ☥
+              </span>
               <h1
-                className={`font-benguiat tracking-[0.25em] text-2xl sm:text-3xl print:text-2xl print-calib-title font-black uppercase ${
-                  isDark ? 'text-zinc-100 text-shadow-dark' : 'text-zinc-950'
+                id="vtm-header-title-vampires"
+                className={`sheet-header-title-vampires font-benguiat tracking-[0.25em] text-2xl sm:text-3xl print:text-2xl print-calib-title font-black uppercase transition-colors duration-200 ${
+                  isDark ? 'text-shadow-dark' : ''
                 }`}
-                style={{ fontFamily: "'Benguiat', 'Benguiat Rus', 'Cinzel', serif" }}
+                style={{
+                  fontFamily: "'Benguiat', 'Benguiat Rus', 'Cinzel', serif",
+                  color: effectivePrimaryTextColor,
+                }}
               >
                 ВАМПИРЫ
               </h1>
-              <span className="text-red-700 text-lg sm:text-xl print:text-base print-calib-ankh select-none">☥</span>
+              <span
+                className="sheet-header-ankh text-lg sm:text-xl print:text-base print-calib-ankh select-none transition-colors duration-200"
+                style={{ color: effectiveAccentTextColor }}
+              >
+                ☥
+              </span>
             </div>
 
             <div className="flex items-center gap-2 mt-0.5 print:mt-0.5">
-              <span className="h-px w-10 sm:w-16 print:w-10 bg-gradient-to-r from-transparent to-red-800"></span>
               <span
-                className={`text-xs sm:text-sm print:text-xs print-calib-subtitle tracking-[0.35em] font-bold uppercase font-benguiat ${
-                  isDark ? 'text-red-600' : 'text-red-800'
-                }`}
-                style={{ fontFamily: "'Benguiat', 'Benguiat Rus', 'Cinzel', serif" }}
+                className="h-px w-10 sm:w-16 print:w-10 sheet-header-line-left"
+                style={{ background: `linear-gradient(to right, transparent, ${effectiveAccentTextColor})` }}
+              ></span>
+              <span
+                id="vtm-header-subtitle-masquerade"
+                className="sheet-header-subtitle-masquerade text-xs sm:text-sm print:text-xs print-calib-subtitle tracking-[0.35em] font-bold uppercase font-benguiat transition-colors duration-200"
+                style={{
+                  fontFamily: "'Benguiat', 'Benguiat Rus', 'Cinzel', serif",
+                  color: effectiveAccentTextColor,
+                }}
               >
                 † М А С К А Р А Д †
               </span>
-              <span className="h-px w-10 sm:w-16 print:w-10 bg-gradient-to-l from-transparent to-red-800"></span>
+              <span
+                className="h-px w-10 sm:w-16 print:w-10 sheet-header-line-right"
+                style={{ background: `linear-gradient(to left, transparent, ${effectiveAccentTextColor})` }}
+              ></span>
             </div>
           </>
         )}
@@ -76,10 +110,13 @@ export const SheetHeader: React.FC<SheetHeaderProps> = ({
         {pageTitle && (
           <div className="mt-1 flex items-center justify-center gap-3">
             <span
-              className={`text-xs sm:text-sm font-benguiat tracking-widest uppercase font-bold px-3 py-0.5 rounded ${
-                isDark ? 'text-red-600 bg-red-950/40 border border-red-900/60' : 'text-red-950 bg-red-100/70 border border-red-300'
-              }`}
-              style={{ fontFamily: "'Benguiat', 'Benguiat Rus', 'Cinzel', serif" }}
+              className="text-xs sm:text-sm font-benguiat tracking-widest uppercase font-bold px-3 py-0.5 rounded transition-colors duration-200"
+              style={{
+                fontFamily: "'Benguiat', 'Benguiat Rus', 'Cinzel', serif",
+                color: effectiveAccentTextColor,
+                backgroundColor: isDark ? 'rgba(0, 0, 0, 0.4)' : 'rgba(254, 226, 226, 0.7)',
+                border: `1px solid ${effectiveAccentTextColor}60`,
+              }}
             >
               {pageTitle}
             </span>

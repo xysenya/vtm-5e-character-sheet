@@ -112,13 +112,31 @@
   }
 
   /* Modals in fixed overlays are always dark vampiresque dialogs */
+  .vtm-modal-root,
+  body.theme-light .vtm-modal-root,
+  body.theme-light [role="dialog"] {
+    color: #e4e4e7;
+  }
+
+  .vtm-modal-root h1,
+  .vtm-modal-root h2,
+  .vtm-modal-root h3,
+  .vtm-modal-root h4,
+  .vtm-modal-root h5,
+  .vtm-modal-root h6,
   body.theme-light .fixed h1,
   body.theme-light .fixed h2,
   body.theme-light .fixed h3,
   body.theme-light .fixed h4,
   body.theme-light .fixed h5,
-  body.theme-light .fixed h6 {
-    color: #f4f4f5;
+  body.theme-light .fixed h6,
+  body.theme-light [role="dialog"] h1,
+  body.theme-light [role="dialog"] h2,
+  body.theme-light [role="dialog"] h3,
+  body.theme-light [role="dialog"] h4,
+  body.theme-light [role="dialog"] h5,
+  body.theme-light [role="dialog"] h6 {
+    color: #f4f4f5 !important;
   }
 
   .sheet-theme-dark .v5-track-label,

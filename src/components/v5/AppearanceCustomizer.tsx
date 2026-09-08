@@ -178,32 +178,60 @@ export const AppearanceCustomizer: React.FC<AppearanceCustomizerProps> = ({
             color: ${customColors.textPrimary} !important;
           }
 
-          /* 2. Primary text color across ALL sheet text elements:
-             - buttons (Attributes, Skills, Disciplines, Specialties, Clan, Predator, Merits, Flaws)
-             - paragraphs, labels (non-accent), table cells, info fields
-             - spans (non-accent)
-             - divs with serif / zinc / black / white text
-          */
-          .page-break p,
-          .page-break label:not([class*="text-red-"]):not([class*="text-rose-"]):not([class*="font-benguiat"]),
-          .page-break td,
-          .page-break th,
+          /* 2. Primary text color across sheet text elements (strictly excluding modals) */
+          .page-break p:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break label:not([class*="text-red-"]):not([class*="text-rose-"]):not([class*="font-benguiat"]):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break td:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break th:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
           .page-break .v5-track-label,
           .page-break .header-info-field,
           .page-break .print-white-bg,
-          .page-break div[class*="font-serif"],
-          .page-break div[class*="text-zinc-"],
-          .page-break div[class*="text-black"],
-          .page-break div[class*="text-white"],
-          .page-break span:not(.custom-accent-colored):not(.section-divider-diamond):not(.print-calib-ankh):not([class*="text-red-"]):not([class*="text-rose-"]):not([class*="font-benguiat"]):not(.vtm-aux-tool-btn *):not(#vtm-header-settings-trigger *):not(#vtm-toggle-sheet-theme-trigger *):not(#vtm-toggle-logo-trigger *):not(#vtm-attr-rules-btn *):not(#vtm-attr-randomize-btn *):not(#vtm-skills-rules-btn *):not(#vtm-skills-randomize-btn *),
-          .page-break button:not(.vtm-aux-tool-btn):not(#vtm-header-settings-trigger):not(#vtm-toggle-sheet-theme-trigger):not(#vtm-toggle-logo-trigger):not(#vtm-attr-rules-btn):not(#vtm-attr-randomize-btn):not(#vtm-skills-rules-btn):not(#vtm-skills-randomize-btn):not([role="radio"]):not([class*="text-red-"]):not([class*="text-rose-"]):not([class*="font-benguiat"]) {
+          .page-break div[class*="font-serif"]:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break div[class*="text-zinc-"]:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break div[class*="text-black"]:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break div[class*="text-white"]:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break span:not(.custom-accent-colored):not(.section-divider-diamond):not(.print-calib-ankh):not(.sheet-header-ankh):not(.sheet-header-subtitle-masquerade):not([class*="text-red-"]):not([class*="text-rose-"]):not([class*="font-benguiat"]):not(.vtm-aux-tool-btn *):not(#vtm-header-settings-trigger *):not(#vtm-toggle-sheet-theme-trigger *):not(#vtm-toggle-logo-trigger *):not(#vtm-attr-rules-btn *):not(#vtm-attr-randomize-btn *):not(#vtm-skills-rules-btn *):not(#vtm-skills-randomize-btn *):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break button:not(.vtm-aux-tool-btn):not(#vtm-header-settings-trigger):not(#vtm-toggle-sheet-theme-trigger):not(#vtm-toggle-logo-trigger):not(#vtm-attr-rules-btn):not(#vtm-attr-randomize-btn):not(#vtm-skills-rules-btn):not(#vtm-skills-randomize-btn):not([role="radio"]):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *):not([class*="text-red-"]):not([class*="text-rose-"]):not([class*="font-benguiat"]) {
             color: ${customColors.textPrimary} !important;
           }
 
-          /* 3. Input fields, textareas, selects */
-          .page-break input:not([type=checkbox]),
-          .page-break select,
-          .page-break textarea:not(.match-sheet-bg) {
+          /* Attributes (Сила, Ловкость...) and Skills (Драка, Ремесло...) MUST be strictly Primary Text Color */
+          .page-break .vtm-trait-btn,
+          .page-break button.vtm-trait-btn,
+          .page-break button.vtm-attribute-btn,
+          .page-break button.vtm-skill-btn {
+            color: ${customColors.textPrimary} !important;
+          }
+          .page-break .vtm-trait-btn:hover,
+          .page-break button.vtm-trait-btn:hover,
+          .page-break button.vtm-attribute-btn:hover,
+          .page-break button.vtm-skill-btn:hover {
+            color: ${customColors.textAccent} !important;
+          }
+
+          /* Header title "ВАМПИРЫ" is ALWAYS strictly PRIMARY text color */
+          .page-break .sheet-header-title-vampires,
+          .page-break h1.sheet-header-title-vampires {
+            color: ${customColors.textPrimary} !important;
+          }
+
+          /* Header subtitle "† М А С К А Р А Д †" is ALWAYS strictly ACCENT text color (independent of clan) */
+          .page-break .sheet-header-subtitle-masquerade,
+          .page-break span.sheet-header-subtitle-masquerade,
+          .page-break .sheet-header-ankh {
+            color: ${customColors.textAccent} !important;
+          }
+          .page-break .sheet-header-line-left {
+            background: linear-gradient(to right, transparent, ${customColors.textAccent}) !important;
+          }
+          .page-break .sheet-header-line-right {
+            background: linear-gradient(to left, transparent, ${customColors.textAccent}) !important;
+          }
+
+          /* 3. Input fields, textareas, selects (strictly on character sheet, never inside modals) */
+          .page-break input:not([type=checkbox]):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break select:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break textarea:not(.match-sheet-bg):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *) {
             background-color: ${customColors.inputBg} !important;
             border-color: ${customColors.borderColor} !important;
             color: ${customColors.textPrimary} !important;
@@ -220,22 +248,21 @@ export const AppearanceCustomizer: React.FC<AppearanceCustomizerProps> = ({
             color: ${customColors.textPrimary} !important;
           }
 
-          /* 4. Accent text: Headings, Benguiat subheaders ("Физические", "Социальные", "Ментальные"),
-             section divider titles, column headers, red text */
-          .page-break h1,
-          .page-break h2,
-          .page-break h3,
-          .page-break h4,
+          /* 4. Accent text: Headings, Benguiat subheaders, section divider titles (strictly excluding header title and trait buttons) */
+          .page-break h1:not(.sheet-header-title-vampires):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break h2:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break h3:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break h4:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
           .page-break .section-divider-title,
           .page-break .print-calib-subtitle,
           .page-break .v5-accent-text,
           .page-break .benguiat-accent,
-          .page-break .font-benguiat,
-          .page-break div[class*="font-benguiat"],
-          .page-break span[class*="font-benguiat"],
-          .page-break label[class*="font-benguiat"],
-          .page-break [class*="text-red-"]:not(#vtm-attr-rules-popup *):not(#vtm-skills-rules-popup *):not(.vtm-aux-tool-btn *),
-          .page-break [class*="text-rose-"] {
+          .page-break .font-benguiat:not(.sheet-header-title-vampires):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break div[class*="font-benguiat"]:not(.sheet-header-title-vampires):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break span[class*="font-benguiat"]:not(.sheet-header-title-vampires):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break label[class*="font-benguiat"]:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break [class*="text-red-"]:not(#vtm-attr-rules-popup *):not(#vtm-skills-rules-popup *):not(.vtm-aux-tool-btn *):not(.vtm-trait-btn):not(.vtm-trait-btn *):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break [class*="text-rose-"]:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *) {
             color: ${customColors.textAccent} !important;
           }
 
@@ -258,9 +285,9 @@ export const AppearanceCustomizer: React.FC<AppearanceCustomizerProps> = ({
             fill: ${customColors.graphicsAccent} !important;
           }
 
-          .page-break [class*="border-red-900"],
-          .page-break [class*="border-red-800"],
-          .page-break [class*="border-red-700"] {
+          .page-break [class*="border-red-900"]:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break [class*="border-red-800"]:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break [class*="border-red-700"]:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *) {
             border-color: ${customColors.graphicsAccent} !important;
           }
 
@@ -288,6 +315,14 @@ export const AppearanceCustomizer: React.FC<AppearanceCustomizerProps> = ({
           /* Unfilled dots border */
           .page-break button[role="radio"][aria-checked="false"] {
             border-color: ${customColors.borderColor} !important;
+          }
+
+          /* =========================================================================
+             MODAL SHIELD: COMPLETE IMMUNITY FOR MODAL DIALOGS
+             ========================================================================= */
+          .vtm-modal-root,
+          .vtm-modal-root * {
+            box-sizing: border-box;
           }
         `}</style>
       )}

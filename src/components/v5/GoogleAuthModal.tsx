@@ -43,7 +43,9 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/90 p-6 relative transition-all ring-1 ring-red-950/40"
+        role="dialog"
+        aria-modal="true"
+        className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/90 p-6 relative transition-all ring-1 ring-red-950/40 vtm-modal-root"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}

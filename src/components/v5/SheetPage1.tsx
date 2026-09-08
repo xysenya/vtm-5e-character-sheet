@@ -28,6 +28,8 @@ interface SheetPage1Props {
   onOpenDiceRoller: (pool: number, label: string) => void;
   isDark?: boolean;
   onToggleTheme?: () => void;
+  primaryTextColor?: string;
+  accentTextColor?: string;
 }
 
 export const SheetPage1: React.FC<SheetPage1Props> = ({
@@ -36,6 +38,8 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
   onOpenDiceRoller,
   isDark = false,
   onToggleTheme,
+  primaryTextColor,
+  accentTextColor,
 }) => {
   const info = sheet.info;
   const tracks = sheet.v5Tracks || {
@@ -580,10 +584,11 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
   };
 
   return (
-    <div
-      className={`relative w-full max-w-[210mm] min-h-[297mm] mx-auto p-4 sm:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-1 print:p-0 print:m-0 print:max-w-full print:w-full print:min-h-0 print:h-auto print:overflow-visible flex flex-col justify-start ${
-        isDark ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800' : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
-      }`}
+    <>
+      <div
+        className={`relative w-full max-w-[210mm] min-h-[297mm] mx-auto p-4 sm:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-1 print:p-0 print:m-0 print:max-w-full print:w-full print:min-h-0 print:h-auto print:overflow-visible flex flex-col justify-start ${
+          isDark ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800' : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
+        }`}
       style={{
         boxShadow: isDark
           ? '0 10px 35px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(153, 27, 27, 0.1)'
@@ -666,7 +671,12 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
         </button>
       </div>
 
-      <SheetHeader themeMode={isDark ? 'dark' : 'light'} useGraphicLogo={sheet.v5UseGraphicLogo} />
+      <SheetHeader
+        themeMode={isDark ? 'dark' : 'light'}
+        useGraphicLogo={sheet.v5UseGraphicLogo}
+        primaryTextColor={primaryTextColor}
+        accentTextColor={accentTextColor}
+      />
 
       {/* TOP 3x3 INFO TABLE */}
       <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-2 sm:gap-3 print:gap-x-3 print:gap-y-1.5 my-2.5 print:my-1.5 print-calib-grid-gap text-xs print:text-[11px]">
@@ -815,7 +825,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
                 <button
                   type="button"
                   onClick={() => onOpenDiceRoller(item.value, name)}
-                  className={`font-serif font-medium text-left transition-colors cursor-pointer truncate min-w-0 print:text-[11.5px] print:leading-normal ${
+                  className={`vtm-trait-btn vtm-attribute-btn font-serif font-medium text-left transition-colors cursor-pointer truncate min-w-0 print:text-[11.5px] print:leading-normal ${
                     isDark ? 'text-zinc-100 hover:text-red-400' : 'text-zinc-900 hover:text-red-600'
                   }`}
                   title={`Добавить ${name} (${item.value}) в проверку костей`}
@@ -853,7 +863,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
                 <button
                   type="button"
                   onClick={() => onOpenDiceRoller(item.value, name)}
-                  className={`font-serif font-medium text-left transition-colors cursor-pointer truncate min-w-0 print:text-[11.5px] print:leading-normal ${
+                  className={`vtm-trait-btn vtm-attribute-btn font-serif font-medium text-left transition-colors cursor-pointer truncate min-w-0 print:text-[11.5px] print:leading-normal ${
                     isDark ? 'text-zinc-100 hover:text-red-400' : 'text-zinc-900 hover:text-red-600'
                   }`}
                   title={`Добавить ${name} (${item.value}) в проверку костей`}
@@ -891,7 +901,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
                 <button
                   type="button"
                   onClick={() => onOpenDiceRoller(item.value, name)}
-                  className={`font-serif font-medium text-left transition-colors cursor-pointer truncate min-w-0 print:text-[11.5px] print:leading-normal ${
+                  className={`vtm-trait-btn vtm-attribute-btn font-serif font-medium text-left transition-colors cursor-pointer truncate min-w-0 print:text-[11.5px] print:leading-normal ${
                     isDark ? 'text-zinc-100 hover:text-red-400' : 'text-zinc-900 hover:text-red-600'
                   }`}
                   title={`Добавить ${name} (${item.value}) в проверку костей`}
@@ -1001,7 +1011,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
                 <button
                   type="button"
                   onClick={() => onOpenDiceRoller(skill.value, skill.name)}
-                  className={`font-serif ${isDark ? 'text-zinc-100 hover:text-red-400' : 'text-zinc-900 hover:text-red-600'} text-left transition-colors cursor-pointer shrink-0 select-none truncate max-w-[90px] sm:max-w-[95px] print:max-w-none print:text-[11px] print:leading-normal`}
+                  className={`vtm-trait-btn vtm-skill-btn font-serif ${isDark ? 'text-zinc-100 hover:text-red-400' : 'text-zinc-900 hover:text-red-600'} text-left transition-colors cursor-pointer shrink-0 select-none truncate max-w-[90px] sm:max-w-[95px] print:max-w-none print:text-[11px] print:leading-normal`}
                   title={`Добавить ${skill.name} (${skill.value}) в проверку костей`}
                 >
                   {skill.name}
@@ -1038,7 +1048,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
                 <button
                   type="button"
                   onClick={() => onOpenDiceRoller(skill.value, skill.name)}
-                  className={`font-serif ${isDark ? 'text-zinc-100 hover:text-red-400' : 'text-zinc-900 hover:text-red-600'} text-left transition-colors cursor-pointer shrink-0 select-none truncate max-w-[90px] sm:max-w-[95px] print:max-w-none print:text-[11px] print:leading-normal`}
+                  className={`vtm-trait-btn vtm-skill-btn font-serif ${isDark ? 'text-zinc-100 hover:text-red-400' : 'text-zinc-900 hover:text-red-600'} text-left transition-colors cursor-pointer shrink-0 select-none truncate max-w-[90px] sm:max-w-[95px] print:max-w-none print:text-[11px] print:leading-normal`}
                   title={`Добавить ${skill.name} (${skill.value}) в проверку костей`}
                 >
                   {skill.name}
@@ -1075,7 +1085,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
                 <button
                   type="button"
                   onClick={() => onOpenDiceRoller(skill.value, skill.name)}
-                  className={`font-serif ${isDark ? 'text-zinc-100 hover:text-red-400' : 'text-zinc-900 hover:text-red-600'} text-left transition-colors cursor-pointer shrink-0 select-none truncate max-w-[90px] sm:max-w-[95px] print:max-w-none print:text-[11px] print:leading-normal`}
+                  className={`vtm-trait-btn vtm-skill-btn font-serif ${isDark ? 'text-zinc-100 hover:text-red-400' : 'text-zinc-900 hover:text-red-600'} text-left transition-colors cursor-pointer shrink-0 select-none truncate max-w-[90px] sm:max-w-[95px] print:max-w-none print:text-[11px] print:leading-normal`}
                   title={`Добавить ${skill.name} (${skill.value}) в проверку костей`}
                 >
                   {skill.name}
@@ -1217,6 +1227,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
           ))}
         </div>
       </div>
+    </div>
 
       {/* Header Settings Modal */}
       <HeaderSettingsModal
@@ -1335,6 +1346,6 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
         onConfirm={handleRandomizeSkills}
         isDark={isDark}
       />
-    </div>
+    </>
   );
 };

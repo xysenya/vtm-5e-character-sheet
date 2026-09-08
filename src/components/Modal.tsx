@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -42,10 +43,10 @@ export const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  const modalMarkup = (
     <div
       id={id || 'vtm-modal-backdrop'}
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-sm overflow-y-auto overflow-x-hidden animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-sm overflow-y-auto overflow-x-hidden animate-fadeIn vtm-modal-backdrop"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -56,7 +57,7 @@ export const Modal: React.FC<ModalProps> = ({
         id="vtm-modal-container"
         role="dialog"
         aria-modal="true"
-        className={`w-full ${maxWidth} bg-[#0d0d0d] border border-red-900/40 rounded-xl shadow-2xl shadow-black/90 text-zinc-200 relative overflow-hidden flex flex-col max-h-[92vh] my-auto ${
+        className={`w-full ${maxWidth} bg-[#0d0d0d] border border-red-900/40 rounded-xl shadow-2xl shadow-black/90 text-zinc-200 relative overflow-hidden flex flex-col max-h-[92vh] my-auto vtm-modal-root ${
           containerClassName || ''
         }`}
       >
@@ -98,4 +99,8 @@ export const Modal: React.FC<ModalProps> = ({
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined'
+    ? createPortal(modalMarkup, document.body)
+    : modalMarkup;
 };

@@ -105,7 +105,7 @@ export const NewCharacterModal: React.FC<NewCharacterModalProps> = ({
         id="new-character-modal-container"
         role="dialog"
         aria-modal="true"
-        className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-xl shadow-2xl shadow-black/95 border border-red-900/50 bg-[#0d0d0d] text-zinc-100 overflow-hidden my-auto"
+        className="relative w-full max-w-4xl max-h-[92vh] flex flex-col rounded-xl shadow-2xl shadow-black/95 border border-red-900/50 bg-[#0d0d0d] text-zinc-100 overflow-hidden my-auto vtm-modal-root"
       >
         {/* Ornate top blood line */}
         <div className="h-[2px] bg-gradient-to-r from-red-950 via-red-600 to-red-950 shrink-0" />

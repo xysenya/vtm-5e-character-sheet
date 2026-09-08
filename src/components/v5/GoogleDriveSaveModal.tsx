@@ -60,7 +60,9 @@ export const GoogleDriveSaveModal: React.FC<GoogleDriveSaveModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/95 p-6 relative transition-all ring-1 ring-red-950/40"
+        role="dialog"
+        aria-modal="true"
+        className="w-full max-w-md rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-100 shadow-2xl shadow-black/95 p-6 relative transition-all ring-1 ring-red-950/40 vtm-modal-root"
         onClick={(e) => e.stopPropagation()}
       >
         <button

@@ -16,6 +16,8 @@ interface SheetPage2Props {
   onChange: (updated: CharacterSheet) => void;
   isDark?: boolean;
   meritsRows?: number;
+  primaryTextColor?: string;
+  accentTextColor?: string;
 }
 
 export const SheetPage2: React.FC<SheetPage2Props> = ({
@@ -23,6 +25,8 @@ export const SheetPage2: React.FC<SheetPage2Props> = ({
   onChange,
   isDark = false,
   meritsRows = 17,
+  primaryTextColor,
+  accentTextColor,
 }) => {
   const isPrinting = useIsPrinting();
   const ph = (text: string) => (isPrinting ? '' : text);
@@ -334,21 +338,24 @@ export const SheetPage2: React.FC<SheetPage2Props> = ({
     : 'bg-white/80 border-zinc-400 text-zinc-900 focus:border-red-700 focus:bg-white';
 
   return (
-    <div
-      className={`relative w-full max-w-[210mm] min-h-[297mm] mx-auto p-4 sm:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-2 print:p-0 print:m-0 print:max-w-full print:w-full print:min-h-0 print:h-auto print:overflow-visible flex flex-col justify-start ${
-        isDark ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800' : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
-      }`}
-      style={{
-        boxShadow: isDark
-          ? '0 10px 35px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(153, 27, 27, 0.1)'
-          : '0 10px 30px -5px rgba(0, 0, 0, 0.15)',
-      }}
-    >
-      <SheetHeader
-        pageTitle="Преимущества и Кровь"
-        themeMode={isDark ? 'dark' : 'light'}
-        useGraphicLogo={sheet.v5UseGraphicLogo}
-      />
+    <>
+      <div
+        className={`relative w-full max-w-[210mm] min-h-[297mm] mx-auto p-4 sm:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-2 print:p-0 print:m-0 print:max-w-full print:w-full print:min-h-0 print:h-auto print:overflow-visible flex flex-col justify-start ${
+          isDark ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800' : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
+        }`}
+        style={{
+          boxShadow: isDark
+            ? '0 10px 35px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(153, 27, 27, 0.1)'
+            : '0 10px 30px -5px rgba(0, 0, 0, 0.15)',
+        }}
+      >
+        <SheetHeader
+          pageTitle="Преимущества и Кровь"
+          themeMode={isDark ? 'dark' : 'light'}
+          useGraphicLogo={sheet.v5UseGraphicLogo}
+          primaryTextColor={primaryTextColor}
+          accentTextColor={accentTextColor}
+        />
 
       {/* 1. TOP SECTION: КРОВЬ */}
       <div className="space-y-2 mb-3 print:mb-2 shrink-0 print-calib-p2-blood-section">
@@ -693,6 +700,7 @@ export const SheetPage2: React.FC<SheetPage2Props> = ({
           </div>
         </div>
       </div>
+    </div>
 
       {/* Merits & Flaws Selection Modal */}
       <MeritFlawSelectModal
@@ -726,6 +734,6 @@ export const SheetPage2: React.FC<SheetPage2Props> = ({
           );
         }}
       />
-    </div>
+    </>
   );
 };

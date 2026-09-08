@@ -11,3 +11,4 @@ coverage/
 memory.md
 .system_generated/
 *.local
+firebase-applet-config.json

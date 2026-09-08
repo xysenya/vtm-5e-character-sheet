@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { CharacterSheet } from '../../types';
+import { CLAN_THEMES } from '../../data/clans';
 import { SheetHeader, SectionDivider } from './SheetHeader';
 import { useIsPrinting } from '../../utils/useIsPrinting';
 import { Plus } from 'lucide-react';
@@ -10,6 +11,8 @@ interface SheetPage4Props {
   onChange: (updated: CharacterSheet) => void;
   isDark?: boolean;
   notesHeight?: number;
+  primaryTextColor?: string;
+  accentTextColor?: string;
 }
 
 export const SheetPage4: React.FC<SheetPage4Props> = ({
@@ -17,6 +20,8 @@ export const SheetPage4: React.FC<SheetPage4Props> = ({
   onChange,
   isDark = false,
   notesHeight = 880,
+  primaryTextColor,
+  accentTextColor,
 }) => {
   const isPrinting = useIsPrinting();
   const ph = (text: string) => (isPrinting ? '' : text);
@@ -289,6 +294,8 @@ export const SheetPage4: React.FC<SheetPage4Props> = ({
           pageTitle="Заметки"
           themeMode={isDark ? 'dark' : 'light'}
           useGraphicLogo={sheet.v5UseGraphicLogo}
+          primaryTextColor={primaryTextColor}
+          accentTextColor={accentTextColor}
         />
 
         <div className="flex-1 flex flex-col my-2 min-h-0 print-calib-p4-notes-container">

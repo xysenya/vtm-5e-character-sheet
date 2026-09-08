@@ -7,7 +7,7 @@ import {
   signOut,
   User,
 } from 'firebase/auth';
-import firebaseConfig from '../../firebase-applet-config.json';
+import firebaseConfig from './firebaseConfig';
 import { CharacterSheet } from '../types';
 import { parseCharacterJson } from '../utils/characterJson';
 
@@ -152,6 +152,17 @@ export const loginWithGoogle = async (): Promise<{ user: User; accessToken: stri
     return { user: result.user, accessToken: credential.accessToken };
   } catch (error: any) {
     console.error('Sign in error:', error);
+    if (error?.code === 'auth/unauthorized-domain') {
+      const currentHost = typeof window !== 'undefined' ? window.location.hostname : 'xysenya.github.io';
+      throw new Error(
+        `Домен «${currentHost}» не добавлен в список авторизованных доменов Firebase.\n\n` +
+        `Чтобы авторизация работала на GitHub Pages:\n` +
+        `1. Перейдите в Firebase Console:\nhttps://console.firebase.google.com/project/${firebaseConfig.projectId}/authentication/settings\n` +
+        `2. Во вкладке «Настройки» (Settings) откройте «Авторизованные домены» (Authorized domains)\n` +
+        `3. Нажмите «Добавить домен» и укажите: ${currentHost}\n` +
+        `4. Сохраните изменения.`
+      );
+    }
     throw error;
   } finally {
     isSigningIn = false;

@@ -819,12 +819,16 @@ export default function App() {
               }}
               isDark={effectiveSheetDark}
               onToggleTheme={handleToggleSheetTheme}
+              primaryTextColor={customColors?.textPrimary}
+              accentTextColor={customColors?.textAccent}
             />
             <SheetPage2
               sheet={sheet}
               onChange={setSheet}
               isDark={effectiveSheetDark}
               meritsRows={meritsRows}
+              primaryTextColor={customColors?.textPrimary}
+              accentTextColor={customColors?.textAccent}
             />
             <SheetPage3
               sheet={sheet}
@@ -833,14 +837,24 @@ export default function App() {
               isDark={effectiveSheetDark}
               bioHeight={bioHeight}
               inventoryHeight={inventoryHeight}
+              primaryTextColor={customColors?.textPrimary}
+              accentTextColor={customColors?.textAccent}
             />
             <SheetPage4
               sheet={sheet}
               onChange={setSheet}
               isDark={effectiveSheetDark}
               notesHeight={notesHeight}
+              primaryTextColor={customColors?.textPrimary}
+              accentTextColor={customColors?.textAccent}
             />
-            <SheetPage5 isDark={effectiveSheetDark} />
+            <SheetPage5
+              isDark={effectiveSheetDark}
+              accentColor={activeAccentColor}
+              textColor={sheet.customTheme?.textColor}
+              primaryTextColor={customColors?.textPrimary}
+              accentTextColor={customColors?.textAccent}
+            />
           </div>
         ) : activePage === 1 ? (
           <SheetPage1
@@ -853,6 +867,8 @@ export default function App() {
             }}
             isDark={effectiveSheetDark}
             onToggleTheme={handleToggleSheetTheme}
+            primaryTextColor={customColors?.textPrimary}
+            accentTextColor={customColors?.textAccent}
           />
         ) : activePage === 2 ? (
           <SheetPage2
@@ -860,6 +876,8 @@ export default function App() {
             onChange={setSheet}
             isDark={effectiveSheetDark}
             meritsRows={meritsRows}
+            primaryTextColor={customColors?.textPrimary}
+            accentTextColor={customColors?.textAccent}
           />
         ) : activePage === 3 ? (
           <SheetPage3
@@ -869,6 +887,8 @@ export default function App() {
             isDark={effectiveSheetDark}
             bioHeight={bioHeight}
             inventoryHeight={inventoryHeight}
+            primaryTextColor={customColors?.textPrimary}
+            accentTextColor={customColors?.textAccent}
           />
         ) : activePage === 4 ? (
           <SheetPage4
@@ -876,9 +896,17 @@ export default function App() {
             onChange={setSheet}
             isDark={effectiveSheetDark}
             notesHeight={notesHeight}
+            primaryTextColor={customColors?.textPrimary}
+            accentTextColor={customColors?.textAccent}
           />
         ) : (
-          <SheetPage5 isDark={effectiveSheetDark} />
+          <SheetPage5
+            isDark={effectiveSheetDark}
+            accentColor={activeAccentColor}
+            textColor={sheet.customTheme?.textColor}
+            primaryTextColor={customColors?.textPrimary}
+            accentTextColor={customColors?.textAccent}
+          />
         )}
       </main>
 
