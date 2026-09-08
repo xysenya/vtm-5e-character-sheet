@@ -26,12 +26,7 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
       onClose();
     } catch (err: any) {
       console.error('Google authorization error:', err);
-      // Friendly message for popup closed by user or actual network errors
-      if (err?.code === 'auth/popup-closed-by-user') {
-        setErrorMessage('Окно авторизации было закрыто. Попробуйте снова.');
-      } else {
-        setErrorMessage(err?.message || 'Не удалось выполнить авторизацию. Попробуйте еще раз.');
-      }
+      setErrorMessage(err?.message || 'Не удалось выполнить авторизацию. Попробуйте еще раз.');
     } finally {
       setIsLoading(false);
     }
@@ -97,9 +92,9 @@ export const GoogleAuthModal: React.FC<GoogleAuthModalProps> = ({
 
         {/* Error message */}
         {errorMessage && (
-          <div className="mb-4 p-3 rounded-lg bg-red-950/50 border border-red-800/80 text-red-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
-            <span>{errorMessage}</span>
+          <div className="mb-4 p-3 rounded-lg bg-red-950/60 border border-red-800/80 text-red-300 text-xs flex items-start gap-2.5 max-h-56 overflow-y-auto leading-relaxed">
+            <AlertCircle className="w-4 h-4 shrink-0 text-red-400 mt-0.5" />
+            <div className="whitespace-pre-line">{errorMessage}</div>
           </div>
         )}
 

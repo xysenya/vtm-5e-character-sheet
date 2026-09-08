@@ -163,6 +163,21 @@ export const loginWithGoogle = async (): Promise<{ user: User; accessToken: stri
         `4. Сохраните изменения.`
       );
     }
+    if (error?.code === 'auth/popup-closed-by-user' || error?.code === 'auth/cancelled-popup-request') {
+      throw new Error(
+        'Окно авторизации было закрыто.\n\n' +
+        'Если внутри окна отображалась ошибка «The requested action is invalid»:\n' +
+        'В Google Cloud Console для ключа API включены ограничения веб-сайтов (HTTP-рефереров), блокирующие домен авторизации Firebase.\n\n' +
+        'Инструкция по исправлению:\n' +
+        '1. Откройте Google Cloud Console:\nhttps://console.cloud.google.com/apis/credentials?project=' + firebaseConfig.projectId + '\n' +
+        '2. Нажмите на используемый ключ API (в разделе «API Keys»)\n' +
+        '3. В блоке «Application restrictions» (Ограничения приложений) добавьте в список сайтов:\n' +
+        '   https://' + firebaseConfig.authDomain + '/*\n' +
+        '   https://' + firebaseConfig.projectId + '.web.app/*\n' +
+        '   (либо выберите «None» / «Нет» для снятия блокировки)\n' +
+        '4. Нажмите «Save» (Сохранить).'
+      );
+    }
     throw error;
   } finally {
     isSigningIn = false;
