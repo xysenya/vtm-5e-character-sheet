@@ -22,6 +22,7 @@ import { SheetPage2 } from './components/v5/SheetPage2';
 import { SheetPage3 } from './components/v5/SheetPage3';
 import { SheetPage4 } from './components/v5/SheetPage4';
 import { SheetPage5 } from './components/v5/SheetPage5';
+import { SheetPageRelationshipMap } from './components/v5/SheetPageRelationshipMap';
 
 // Modals
 import { FloatingDiceRoller } from './components/FloatingDiceRoller';
@@ -96,7 +97,7 @@ export default function App() {
   const [isInkSaver, setIsInkSaver] = useState<boolean>(false);
 
   // Active Page Navigation
-  const [activePage, setActivePage] = useState<'all' | 1 | 2 | 3 | 4 | 5>('all');
+  const [activePage, setActivePage] = useState<'all' | 1 | 2 | 3 | 4 | 5 | 6>('all');
   const [isDarkTheme, setIsDarkTheme] = useState<boolean>(() => {
     try {
       const saved = localStorage.getItem('vtm_theme_v2');
@@ -112,6 +113,10 @@ export default function App() {
     try {
       const saved = localStorage.getItem('vtm_sheet_theme_v2');
       if (saved) return saved === 'dark';
+      const oldSaved = localStorage.getItem('vtm_sheet_theme');
+      if (oldSaved) return oldSaved === 'dark';
+      const oldDark = localStorage.getItem('vtm_sheet_dark_theme');
+      if (oldDark) return oldDark === 'true';
       return false; // Светлая тема листа персонажа по умолчанию
     } catch {
       return false;
@@ -138,6 +143,7 @@ export default function App() {
     try {
       localStorage.setItem('vtm_sheet_theme', isSheetDark ? 'dark' : 'light');
       localStorage.setItem('vtm_sheet_theme_v2', isSheetDark ? 'dark' : 'light');
+      localStorage.setItem('vtm_sheet_dark_theme', isSheetDark ? 'true' : 'false');
     } catch {}
   }, [isSheetDark]);
 
@@ -222,22 +228,30 @@ export default function App() {
     return loadSavedAppearanceColors(effectiveSheetDark);
   });
 
-  const handleToggleSheetTheme = () => {
-    const nextDark = !effectiveSheetDark;
-    setIsSheetDark(nextDark);
+  const handleSetSheetDark = (targetDark: boolean) => {
+    setIsSheetDark(targetDark);
     try {
-      localStorage.setItem('vtm_sheet_dark_theme', nextDark ? 'true' : 'false');
+      localStorage.setItem('vtm_sheet_theme', targetDark ? 'dark' : 'light');
+      localStorage.setItem('vtm_sheet_theme_v2', targetDark ? 'dark' : 'light');
+      localStorage.setItem('vtm_sheet_dark_theme', targetDark ? 'true' : 'false');
     } catch {}
-    setCustomColors(loadSavedAppearanceColors(nextDark));
+    const sanitizedColors = loadSavedAppearanceColors(targetDark);
+    setCustomColors(sanitizedColors);
+    saveAppearanceColors(targetDark, sanitizedColors);
   };
+
+  const handleToggleSheetTheme = () => {
+    handleSetSheetDark(!effectiveSheetDark);
+  };
+
+  useEffect(() => {
+    setCustomColors(loadSavedAppearanceColors(effectiveSheetDark));
+  }, [effectiveSheetDark]);
 
   const handleUpdateCustomColors = (newColors: SheetColorSettings, targetThemeIsDark?: boolean) => {
     const isDark = typeof targetThemeIsDark === 'boolean' ? targetThemeIsDark : effectiveSheetDark;
     if (typeof targetThemeIsDark === 'boolean' && targetThemeIsDark !== effectiveSheetDark) {
-      setIsSheetDark(targetThemeIsDark);
-      try {
-        localStorage.setItem('vtm_sheet_dark_theme', targetThemeIsDark ? 'true' : 'false');
-      } catch {}
+      handleSetSheetDark(targetThemeIsDark);
     }
     setCustomColors(newColors);
     saveAppearanceColors(isDark, newColors);
@@ -248,6 +262,7 @@ export default function App() {
   const meritsRows = printCalibration.meritsRows;
   const bioHeight = printCalibration.bioHeight;
   const inventoryHeight = printCalibration.inventoryHeight;
+  const relationshipMapHeight = printCalibration.relationshipMapHeight;
   const notesHeight = 880;
 
   // Custom alert & confirm modal states (Replacing browser window.alert & window.confirm)
@@ -848,6 +863,16 @@ export default function App() {
               primaryTextColor={customColors?.textPrimary}
               accentTextColor={customColors?.textAccent}
             />
+            <SheetPageRelationshipMap
+              sheet={sheet}
+              onChange={setSheet}
+              isDark={effectiveSheetDark}
+              accentColor={activeAccentColor}
+              textColor={sheet.customTheme?.textColor}
+              primaryTextColor={customColors?.textPrimary}
+              accentTextColor={customColors?.textAccent}
+              relationshipMapHeight={relationshipMapHeight}
+            />
             <SheetPage5
               isDark={effectiveSheetDark}
               accentColor={activeAccentColor}
@@ -898,6 +923,17 @@ export default function App() {
             notesHeight={notesHeight}
             primaryTextColor={customColors?.textPrimary}
             accentTextColor={customColors?.textAccent}
+          />
+        ) : activePage === 5 ? (
+          <SheetPageRelationshipMap
+            sheet={sheet}
+            onChange={setSheet}
+            isDark={effectiveSheetDark}
+            accentColor={activeAccentColor}
+            textColor={sheet.customTheme?.textColor}
+            primaryTextColor={customColors?.textPrimary}
+            accentTextColor={customColors?.textAccent}
+            relationshipMapHeight={relationshipMapHeight}
           />
         ) : (
           <SheetPage5
@@ -998,7 +1034,7 @@ export default function App() {
         isDarkTheme={isDarkTheme}
         onToggleDarkTheme={(val) => setIsDarkTheme(val)}
         isSheetDark={isSheetDark}
-        onToggleSheetDark={(val) => setIsSheetDark(val)}
+        onToggleSheetDark={handleSetSheetDark}
         showPrintCalibrator={showPrintCalibrator}
         onTogglePrintCalibrator={handleTogglePrintCalibrator}
         showAppearanceCustomizer={showAppearanceCustomizer}
@@ -1118,12 +1154,7 @@ export default function App() {
           customColors={customColors}
           onChangeCustomColors={handleUpdateCustomColors}
           isSheetDark={effectiveSheetDark}
-          onToggleSheetDark={(targetDark) => {
-            setIsSheetDark(targetDark);
-            try {
-              localStorage.setItem('vtm_sheet_dark_theme', targetDark ? 'true' : 'false');
-            } catch {}
-          }}
+          onToggleSheetDark={handleSetSheetDark}
           onShowAlert={showAlert}
         />
       </div>

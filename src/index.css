@@ -84,6 +84,32 @@
     color: #f4f4f5;
   }
 
+  /* When the character sheet has light theme, ensure its headings, track labels, and text are dark even if site is dark */
+  .sheet-theme-light,
+  body:not(.theme-light) .sheet-theme-light {
+    color: #18181b;
+  }
+
+  .sheet-theme-light h1:not([class*="text-red-"]):not([class*="text-rose-"]),
+  .sheet-theme-light h2:not([class*="text-red-"]):not([class*="text-rose-"]),
+  .sheet-theme-light h3:not([class*="text-red-"]):not([class*="text-rose-"]),
+  .sheet-theme-light h4:not([class*="text-red-"]):not([class*="text-rose-"]),
+  .sheet-theme-light h5:not([class*="text-red-"]):not([class*="text-rose-"]),
+  .sheet-theme-light h6:not([class*="text-red-"]):not([class*="text-rose-"]),
+  body:not(.theme-light) .sheet-theme-light h1:not([class*="text-red-"]):not([class*="text-rose-"]),
+  body:not(.theme-light) .sheet-theme-light h2:not([class*="text-red-"]):not([class*="text-rose-"]),
+  body:not(.theme-light) .sheet-theme-light h3:not([class*="text-red-"]):not([class*="text-rose-"]),
+  body:not(.theme-light) .sheet-theme-light h4:not([class*="text-red-"]):not([class*="text-rose-"]),
+  body:not(.theme-light) .sheet-theme-light h5:not([class*="text-red-"]):not([class*="text-rose-"]),
+  body:not(.theme-light) .sheet-theme-light h6:not([class*="text-red-"]):not([class*="text-rose-"]) {
+    color: #18181b;
+  }
+
+  .sheet-theme-light .v5-track-label,
+  body:not(.theme-light) .sheet-theme-light .v5-track-label {
+    color: #09090b !important;
+  }
+
   /* Ensure red text stays pure vampire blood red in dark sheet mode, never pink */
   .sheet-theme-dark .text-red-300,
   .sheet-theme-dark .text-red-400,
@@ -291,6 +317,13 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     break-after: auto !important;
   }
 
+  .page-break.page-break-landscape {
+    max-width: 297mm !important;
+    width: 100% !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
   /* Prevent page splitting within subsections */
   .page-break > div,
   .page-break section,
@@ -355,8 +388,22 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     print-color-adjust: exact !important;
   }
 
+  body:not(.print-ink-saver) .sheet-theme-light input.match-sheet-bg,
   body:not(.print-ink-saver) .sheet-theme-light textarea.match-sheet-bg,
-  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) textarea.match-sheet-bg {
+  body:not(.print-ink-saver) .sheet-theme-light .vtm-skill-specialty-input,
+  body:not(.print-ink-saver) .sheet-theme-light .vtm-merit-input,
+  body:not(.print-ink-saver) .sheet-theme-light .vtm-flaw-input,
+  body:not(.print-ink-saver) .sheet-theme-light .vtm-kindred-info-input,
+  body:not(.print-ink-saver) .sheet-theme-light .vtm-kindred-info-section input,
+  body:not(.print-ink-saver) .sheet-theme-light .vtm-kindred-info-section textarea,
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) input.match-sheet-bg,
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) textarea.match-sheet-bg,
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) .vtm-skill-specialty-input,
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) .vtm-merit-input,
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) .vtm-flaw-input,
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) .vtm-kindred-info-input,
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) .vtm-kindred-info-section input,
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) .vtm-kindred-info-section textarea {
     background-color: transparent !important;
     background: transparent !important;
   }
@@ -375,6 +422,28 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     print-color-adjust: exact !important;
   }
 
+  body:not(.print-ink-saver) .sheet-theme-light input:not(.match-sheet-bg):not(.vtm-skill-specialty-input):not(.vtm-merit-input):not(.vtm-flaw-input):not(.vtm-kindred-info-input),
+  body:not(.print-ink-saver) .sheet-theme-light select {
+    border-color: #d4d4d8 !important;
+    color: #18181b !important;
+    background-color: #ffffff !important;
+  }
+
+  body:not(.print-ink-saver) .sheet-theme-light .header-info-field {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #18181b !important;
+    border-color: #a1a1aa !important;
+  }
+
+  body:not(.print-ink-saver) .sheet-theme-light textarea:not(.notebook-ruled-textarea),
+  body:not(.print-ink-saver) .sheet-theme-light .print-white-bg {
+    border-color: #d4d4d8 !important;
+    color: #18181b !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+  }
+
   /* 1B. Dark Sheet Print (preserves dark aesthetic, ruby red headers & light text) */
   body:not(.print-ink-saver) .sheet-theme-dark.page-break {
     background-color: #0f0f11 !important;
@@ -384,7 +453,7 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     print-color-adjust: exact !important;
   }
 
-  body:not(.print-ink-saver) .sheet-theme-dark input,
+  body:not(.print-ink-saver) .sheet-theme-dark input:not(.match-sheet-bg):not(.vtm-skill-specialty-input):not(.vtm-merit-input):not(.vtm-flaw-input):not(.vtm-kindred-info-input),
   body:not(.print-ink-saver) .sheet-theme-dark select {
     border-color: #3f3f46 !important;
     color: #f4f4f5 !important;
@@ -418,7 +487,14 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     print-color-adjust: exact !important;
   }
 
-  body:not(.print-ink-saver) .sheet-theme-dark textarea.match-sheet-bg {
+  body:not(.print-ink-saver) .sheet-theme-dark input.match-sheet-bg,
+  body:not(.print-ink-saver) .sheet-theme-dark textarea.match-sheet-bg,
+  body:not(.print-ink-saver) .sheet-theme-dark .vtm-skill-specialty-input,
+  body:not(.print-ink-saver) .sheet-theme-dark .vtm-merit-input,
+  body:not(.print-ink-saver) .sheet-theme-dark .vtm-flaw-input,
+  body:not(.print-ink-saver) .sheet-theme-dark .vtm-kindred-info-input,
+  body:not(.print-ink-saver) .sheet-theme-dark .vtm-kindred-info-section input,
+  body:not(.print-ink-saver) .sheet-theme-dark .vtm-kindred-info-section textarea {
     background-color: transparent !important;
     background: transparent !important;
   }
@@ -453,9 +529,9 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
   }
 
   /* Option: Keep text fields light during dark theme print */
-  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark input,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark input:not(.match-sheet-bg):not(.vtm-skill-specialty-input):not(.vtm-merit-input):not(.vtm-flaw-input):not(.vtm-kindred-info-input),
   body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark select,
-  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark textarea,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark textarea:not(.match-sheet-bg):not(.vtm-kindred-info-input),
   body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .header-info-field,
   body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .print-white-bg {
     background-color: #ffffff !important;
@@ -463,6 +539,17 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     color: #000000 !important;
     -webkit-text-fill-color: #000000 !important;
     border-color: #9ca3af !important;
+  }
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark input.match-sheet-bg,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark textarea.match-sheet-bg,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .vtm-skill-specialty-input,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .vtm-merit-input,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .vtm-flaw-input,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .vtm-kindred-info-input,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .vtm-kindred-info-section input,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .vtm-kindred-info-section textarea {
+    background-color: transparent !important;
+    background: transparent !important;
   }
   body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark textarea.notebook-ruled-textarea {
     background-color: #ffffff !important;

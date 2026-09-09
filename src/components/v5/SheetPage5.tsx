@@ -57,10 +57,10 @@ export const SheetPage5: React.FC<SheetPage5Props> = ({
                     <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Успех:</strong> Выпадение 6, 7, 8, 9 или 10.
                   </li>
                   <li>
-                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Критический триумф:</strong> Каждая пара 10 дает +2 дополнительных успеха (итого 4 успеха за пару).
+                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Триумф (критический успех):</strong> Каждая пара 10 на обычных кубиках дает +2 дополнительных успеха (итого 4 успеха за пару).
                   </li>
                   <li>
-                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Переброс Силы Воли:</strong> Потратив 1 очко Силы Воли, можно перебросить до 3 обычных кубиков (но НЕ кубики Голода).
+                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Переброс за Силу Воли:</strong> Потратив 1 очко Силы Воли (1 поверхностный урон Воле), можно перебросить до 3 обычных кубиков (но НЕ кубики Голода).
                   </li>
                 </ul>
               </div>
@@ -76,10 +76,10 @@ export const SheetPage5: React.FC<SheetPage5Props> = ({
                     Количество кубиков Голода равно текущему значению Голода (1-5). Они заменяют обычные кубики в пуле.
                   </li>
                   <li>
-                    <strong className="text-amber-500 font-semibold">Грязный триумф (Messy Critical):</strong> При успешном броске хотя бы одна из 10 выпала на кубике Голода. Зверь выходит наружу, вызывая сопутствующий ущерб или манию.
+                    <strong className="text-amber-500 font-semibold">Кровавый триумф (Messy Critical):</strong> При успешном броске хотя бы одна из 10 выпала на кубике Голода. Зверь выходит наружу: успех достигнут ценой сопутствующего ущерба, жестокости, нарушения Маскарада или Одержимости (Наваждения).
                   </li>
                   <li>
-                    <strong className="text-red-500 font-semibold">Звериный провал (Bestial Failure):</strong> При неуспешном броске выпала 1 на кубике Голода. Зверь берет верх — наступает компульсия или потеря самоконтроля.
+                    <strong className="text-red-500 font-semibold">Кровавый провал (Bestial Failure):</strong> При неуспешном броске выпала 1 на кубике Голода. Зверь берет верх — наступает Одержимость (Наваждение) либо персонаж теряет самоконтроль / впадает в Бешенство.
                   </li>
                 </ul>
               </div>
@@ -125,17 +125,17 @@ export const SheetPage5: React.FC<SheetPage5Props> = ({
               {/* Card 4: Rouse Checks & Blood Surge */}
               <div className={`p-3.5 rounded-sm border print-calib-p5-rules-card ${cardBg}`}>
                 <div className={`font-benguiat font-bold text-xs uppercase tracking-wider pb-1.5 mb-2 border-b border-red-900/20 ${isDark ? 'text-red-500' : 'text-red-800'}`}>
-                  Проверка крови (Rouse Check)
+                  Воззвание к Крови (Rouse Check)
                 </div>
                 <ul className="space-y-1.5 font-serif leading-relaxed text-[11px]">
                   <li>
                     Бросается 1d10. Результат <strong>6-10:</strong> успех (Голод не растет). Результат <strong>1-5:</strong> Голод увеличивается на 1.
                   </li>
                   <li>
-                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Проверка требуется:</strong> каждое пробуждение на закате, заживление ран, прилив крови (Blood Surge), активация сил Дисциплин.
+                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Воззвание требуется:</strong> каждое пробуждение на закате, исцеление ран, Прилив Крови (Blood Surge), Румянец Жизни (Blush of Life), активация сил Дисциплин.
                   </li>
                   <li>
-                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Прилив крови (Blood Surge):</strong> перед броском можно совершить проверку крови и добавить к пулу кубики согласно Силе крови.
+                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Прилив Крови (Blood Surge):</strong> перед броском можно совершить Воззвание к Крови и добавить к пулу кубики согласно Силе Крови.
                   </li>
                 </ul>
               </div>
@@ -146,17 +146,17 @@ export const SheetPage5: React.FC<SheetPage5Props> = ({
               {/* Card 5: Damage */}
               <div className={`p-3.5 rounded-sm border print-calib-p5-rules-card ${cardBg}`}>
                 <div className={`font-benguiat font-bold text-xs uppercase tracking-wider pb-1.5 mb-2 border-b border-red-900/20 ${isDark ? 'text-red-500' : 'text-red-800'}`}>
-                  Урон и заживление ран
+                  Урон и исцеление ран
                 </div>
                 <ul className="space-y-1.5 font-serif leading-relaxed text-[11px]">
                   <li>
-                    <strong>Поверхностный урон (/):</strong> удары руками, пули, холодное оружие. Делится пополам для вампиров. За 1 проверку крови заживляется объем, указанный в Силе крови.
+                    <strong>Поверхностный урон (/):</strong> удары руками, пули, холодное оружие. Делится пополам для вампиров (округление вверх). За 1 Воззвание к Крови заживляется объем ран, указанный в Силе Крови.
                   </li>
                   <li>
-                    <strong>Тяжелый урон (✕):</strong> огонь, солнечный свет, клыки/когти сверхъестественных существ. Заживляется во время дневного сна за проверки крови.
+                    <strong>Тяжелый (аггравированный) урон (✕):</strong> огонь, солнечный свет, клыки/когти сверхъестественных существ. Заживляется во время дневного сна за Воззвания к Крови (три успешных за 1 пункт).
                   </li>
                   <li>
-                    Когда трек здоровья полностью заполнен поверхностным уроном, каждая новая рана превращает легкую рану в тяжелую!
+                    Когда трек здоровья полностью заполнен поверхностным уроном, каждая новая рана превращает легкую рану в тяжелую (заменяет / на ✕)!
                   </li>
                 </ul>
               </div>
@@ -164,20 +164,23 @@ export const SheetPage5: React.FC<SheetPage5Props> = ({
               {/* Card 6: Frenzy & Humanity */}
               <div className={`p-3.5 rounded-sm border print-calib-p5-rules-card ${cardBg}`}>
                 <div className={`font-benguiat font-bold text-xs uppercase tracking-wider pb-1.5 mb-2 border-b border-red-900/20 ${isDark ? 'text-red-500' : 'text-red-800'}`}>
-                  Безумие и Раскаяние
+                  Бешенство и Муки совести (Угрызения)
                 </div>
                 <ul className="space-y-1.5 font-serif leading-relaxed text-[11px]">
                   <li>
-                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Бросок на Безумие:</strong> Самообладание + Решительность против сложности провокации (2-5).
+                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Бросок против Бешенства (Frenzy):</strong> Самообладание + Решительность против сложности провокации (2-5).
                   </li>
                   <li>
-                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Ярость (Fury):</strong> оскорбление, нападение, унижение.
+                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Ярость (Fury):</strong> оскорбление, нападение, физическое насилие, унижение.
                   </li>
                   <li>
-                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Ужас (Rötschreck):</strong> открытый огонь, восход солнца.
+                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Ужас / Ротшрек (Rötschreck):</strong> открытый огонь, солнечный свет.
                   </li>
                   <li>
-                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Раскаяние (Remorse):</strong> в конце сессии, если есть Пятна, бросаются чистые ячейки Человечности. Если есть хотя бы 1 успех — Пятна снимаются.
+                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Голод (Hunger Frenzy):</strong> вид или запах свежей крови при Голоде 4-5.
+                  </li>
+                  <li>
+                    <strong className={isDark ? 'text-red-400' : 'text-red-700'}>Муки совести / Угрызения (Remorse):</strong> в конце сессии, если есть Пятна (Stains), бросаются свободные ячейки Человечности (минимум 1 кубик). Если выпал хотя бы 1 успех — Пятна снимаются. При провале персонаж теряет 1 пункт Человечности.
                   </li>
                 </ul>
               </div>
@@ -225,7 +228,7 @@ export const SheetPage5: React.FC<SheetPage5Props> = ({
                       </td>
                     </tr>
                     <tr className={`border-b ${isDark ? 'border-zinc-800/80' : 'border-red-950/10'}`}>
-                      <td className="py-1 font-medium">Сторонняя Дисциплина</td>
+                      <td className="py-1 font-medium">Сторонняя (внеклановая) Дисциплина</td>
                       <td className={`py-1 text-right font-mono font-bold whitespace-nowrap ${isDark ? 'text-red-400' : 'text-red-800'}`}>
                         новое значение × 7
                       </td>
@@ -267,7 +270,7 @@ export const SheetPage5: React.FC<SheetPage5Props> = ({
                       </td>
                     </tr>
                     <tr className={`border-b ${isDark ? 'border-zinc-800/80' : 'border-red-950/10'}`}>
-                      <td className="py-1 font-medium">Преимущество</td>
+                      <td className="py-1 font-medium">Достоинство / Преимущество</td>
                       <td className={`py-1 text-right font-mono font-bold whitespace-nowrap ${isDark ? 'text-red-400' : 'text-red-800'}`}>
                         3 за каждый пункт
                       </td>

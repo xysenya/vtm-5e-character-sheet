@@ -282,7 +282,7 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
         </div>
 
         {/* Right (7 cols): Identity Table */}
-        <div className="sm:col-span-7 print:col-span-7 space-y-2 min-w-0 flex flex-col">
+        <div className="sm:col-span-7 print:col-span-7 space-y-2 min-w-0 flex flex-col vtm-kindred-info-section">
           <SectionDivider title="Сведения о Сородиче" isDark={isDark} />
 
           <div className={`border rounded-sm overflow-hidden flex-1 flex flex-col ${isDark ? 'border-zinc-800' : 'border-zinc-300'}`}>
@@ -298,7 +298,7 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
                       value={bio.birthDate}
                       onChange={(e) => handleBioChange('birthDate', e.target.value)}
                       placeholder={ph('Напр. 14 мая 1968 г.')}
-                      className={`w-full text-left px-1 py-0.5 bg-transparent border-b border-dotted font-serif ${
+                      className={`vtm-kindred-info-input match-sheet-bg w-full text-left px-1 py-0.5 bg-transparent border-b border-dotted font-serif ${
                         isDark ? 'border-zinc-700 text-zinc-100 placeholder:text-zinc-500' : 'border-zinc-400 text-zinc-900 placeholder:text-zinc-400'
                       }`}
                     />
@@ -315,7 +315,7 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
                       value={bio.deathDate}
                       onChange={(e) => handleBioChange('deathDate', e.target.value)}
                       placeholder={ph('Напр. 22 октября 1996 г.')}
-                      className={`w-full text-left px-1 py-0.5 bg-transparent border-b border-dotted font-serif ${
+                      className={`vtm-kindred-info-input match-sheet-bg w-full text-left px-1 py-0.5 bg-transparent border-b border-dotted font-serif ${
                         isDark ? 'border-zinc-700 text-zinc-100 placeholder:text-zinc-500' : 'border-zinc-400 text-zinc-900 placeholder:text-zinc-400'
                       }`}
                     />
@@ -332,7 +332,7 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
                       value={bio.trueAge}
                       onChange={(e) => handleBioChange('trueAge', e.target.value)}
                       placeholder={ph('Напр. 58 лет')}
-                      className={`w-full text-left px-1 py-0.5 bg-transparent border-b border-dotted font-serif ${
+                      className={`vtm-kindred-info-input match-sheet-bg w-full text-left px-1 py-0.5 bg-transparent border-b border-dotted font-serif ${
                         isDark ? 'border-zinc-700 text-zinc-100 placeholder:text-zinc-500' : 'border-zinc-400 text-zinc-900 placeholder:text-zinc-400'
                       }`}
                     />
@@ -349,7 +349,7 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
                       value={bio.apparentAge}
                       onChange={(e) => handleBioChange('apparentAge', e.target.value)}
                       placeholder={ph('Напр. 28 лет')}
-                      className={`w-full text-left px-1 py-0.5 bg-transparent border-b border-dotted font-serif ${
+                      className={`vtm-kindred-info-input match-sheet-bg w-full text-left px-1 py-0.5 bg-transparent border-b border-dotted font-serif ${
                         isDark ? 'border-zinc-700 text-zinc-100 placeholder:text-zinc-500' : 'border-zinc-400 text-zinc-900 placeholder:text-zinc-400'
                       }`}
                     />
@@ -366,7 +366,7 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
                       onChange={(val) => handleBioChange('distinguishingFeatures', val)}
                       placeholder={ph('Шрамы, татуировки, клыки, дефекты...')}
                       isDark={isDark}
-                      className={`w-full flex-1 p-1.5 bg-transparent match-sheet-bg border border-dotted rounded-xs font-serif leading-snug print:bg-transparent ${
+                      className={`vtm-kindred-info-input w-full flex-1 p-1.5 bg-transparent match-sheet-bg border border-dotted rounded-xs font-serif leading-snug print:bg-transparent ${
                         isDark ? 'border-zinc-700 text-zinc-100' : 'border-zinc-400 text-zinc-900'
                       }`}
                     />
@@ -383,7 +383,7 @@ export const SheetPage3: React.FC<SheetPage3Props> = ({
                       onChange={(val) => handleBioChange('bloodBonds', val)}
                       placeholder={ph('Кому обязан или кто привязан...')}
                       isDark={isDark}
-                      className={`w-full flex-1 p-1.5 bg-transparent match-sheet-bg border border-dotted rounded-xs font-serif leading-snug print:bg-transparent ${
+                      className={`vtm-kindred-info-input w-full flex-1 p-1.5 bg-transparent match-sheet-bg border border-dotted rounded-xs font-serif leading-snug print:bg-transparent ${
                         isDark ? 'border-zinc-700 text-zinc-100' : 'border-zinc-400 text-zinc-900'
                       }`}
                     />

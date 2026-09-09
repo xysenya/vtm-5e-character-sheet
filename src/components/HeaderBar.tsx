@@ -18,8 +18,8 @@ import { User } from 'firebase/auth';
 interface HeaderBarProps {
   sheet: CharacterSheet;
   theme: ClanTheme;
-  activePage?: 'all' | 1 | 2 | 3 | 4 | 5;
-  onChangePage?: (page: 'all' | 1 | 2 | 3 | 4 | 5) => void;
+  activePage?: 'all' | 1 | 2 | 3 | 4 | 5 | 6;
+  onChangePage?: (page: 'all' | 1 | 2 | 3 | 4 | 5 | 6) => void;
   isDark?: boolean;
   onToggleDark?: () => void;
   onOpenPrint: () => void;
@@ -318,7 +318,8 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
               { id: 2, label: 'Лист 2: Преимущества и Кровь' },
               { id: 3, label: 'Лист 3: Биография' },
               { id: 4, label: 'Лист 4: Заметки' },
-              { id: 5, label: 'Лист 5: Подсказки' },
+              { id: 5, label: 'Лист 5: Схема отношений' },
+              { id: 6, label: 'Лист 6: Подсказки' },
             ].map((page) => (
               <button
                 key={page.id}

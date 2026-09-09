@@ -330,6 +330,61 @@ export interface CharacterSheet {
   };
   v5HeaderSlots?: string[];
   v5UseGraphicLogo?: boolean;
+  // Relationship Map Canvas (Схема отношений):
+  relationshipMap?: RelationshipMapData;
+}
+
+export type RelationshipCardType =
+  | 'pc' // Персонаж игрока
+  | 'npc' // Неигровой персонаж
+  | 'player' // Игрок
+  | 'faction' // Фракция
+  | 'location'; // Место
+
+export interface RelationshipCard {
+  id: string;
+  name: string;
+  type: RelationshipCardType;
+  clan?: ClanId | string;
+  customClanName?: string;
+  imageUrl?: string;
+  notes?: string;
+  x: number; // Положение на холсте по горизонтали (px)
+  y: number; // Положение на холсте по вертикали (px)
+  width?: number;
+  height?: number;
+}
+
+export type RelationshipConnectionType =
+  | 'sire_childe' // Сир-дитя
+  | 'blood_bond' // Узы крови
+  | 'liege_vassal' // Сюзерен-вассал
+  | 'ally' // Союзник
+  | 'enemy' // Враг
+  | 'rival' // Соперник
+  | 'love' // Любовь
+  | 'enmity' // Вражда
+  | 'debt' // Долг
+  | 'touchstone' // Опора
+  | 'relative' // Родственник
+  | 'other'; // Прочее
+
+export type ConnectionSide = 'top' | 'right' | 'bottom' | 'left';
+
+export interface RelationshipConnection {
+  id: string;
+  fromId: string;
+  toId: string;
+  type: RelationshipConnectionType;
+  fromSide?: ConnectionSide;
+  toSide?: ConnectionSide;
+  customLabel?: string;
+  isBidirectional?: boolean;
+}
+
+export interface RelationshipMapData {
+  cards: RelationshipCard[];
+  connections: RelationshipConnection[];
 }
 
 export interface DiceRollResult {

@@ -583,7 +583,7 @@ export const SheetPage2: React.FC<SheetPage2Props> = ({
                     value={item.name}
                     onChange={(e) => handleMeritChange(idx, 'name', e.target.value)}
                     placeholder={ph(`Преимущество...`)}
-                    className={`flex-1 px-1.5 py-0.5 h-full text-xs print:text-[11px] font-serif border-b border-dotted bg-transparent focus:outline-none leading-none ${
+                    className={`vtm-merit-input match-sheet-bg flex-1 px-1.5 py-0.5 h-full text-xs print:text-[11px] font-serif border-b border-dotted bg-transparent focus:outline-none leading-none ${
                       isDark
                         ? 'border-zinc-700 text-zinc-100 focus:border-red-500 placeholder:text-zinc-500'
                         : 'border-zinc-400 text-zinc-900 focus:border-red-700 placeholder:text-zinc-400'
@@ -660,7 +660,7 @@ export const SheetPage2: React.FC<SheetPage2Props> = ({
                     value={item.name}
                     onChange={(e) => handleFlawChange(idx, 'name', e.target.value)}
                     placeholder={ph(`Недостаток...`)}
-                    className={`flex-1 px-1.5 py-0.5 h-full text-xs print:text-[11px] font-serif border-b border-dotted bg-transparent focus:outline-none leading-none ${
+                    className={`vtm-flaw-input match-sheet-bg flex-1 px-1.5 py-0.5 h-full text-xs print:text-[11px] font-serif border-b border-dotted bg-transparent focus:outline-none leading-none ${
                       isDark
                         ? 'border-zinc-700 text-zinc-100 focus:border-red-500 placeholder:text-zinc-500'
                         : 'border-zinc-400 text-zinc-900 focus:border-red-700 placeholder:text-zinc-400'

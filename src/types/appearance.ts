@@ -143,16 +143,86 @@ export const COLOR_PRESETS: ColorPreset[] = [
   },
 ];
 
+export const isColorLight = (hex: string): boolean => {
+  if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) return true;
+  const c = hex.replace('#', '');
+  if (c.length !== 6 && c.length !== 3) return true;
+  const r = parseInt(c.length === 3 ? c[0] + c[0] : c.substring(0, 2), 16) || 0;
+  const g = parseInt(c.length === 3 ? c[1] + c[1] : c.substring(2, 4), 16) || 0;
+  const b = parseInt(c.length === 3 ? c[2] + c[2] : c.substring(4, 6), 16) || 0;
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 128;
+};
+
+export const sanitizeColorSettings = (
+  colors: Partial<SheetColorSettings> | null | undefined,
+  isDark: boolean
+): SheetColorSettings => {
+  const defaults = isDark ? DEFAULT_DARK_COLORS : DEFAULT_LIGHT_COLORS;
+  if (!colors || typeof colors !== 'object') {
+    return { ...defaults };
+  }
+
+  const result: SheetColorSettings = { ...defaults };
+
+  // 1. sheetBg: In dark mode must be dark, in light mode must be light
+  if (colors.sheetBg && typeof colors.sheetBg === 'string' && colors.sheetBg.startsWith('#')) {
+    const isBgLight = isColorLight(colors.sheetBg);
+    if (isDark ? !isBgLight : isBgLight) {
+      result.sheetBg = colors.sheetBg;
+    }
+  }
+
+  // 2. textPrimary: In dark mode text must be light, in light mode text must be dark
+  if (colors.textPrimary && typeof colors.textPrimary === 'string' && colors.textPrimary.startsWith('#')) {
+    const isTxtLight = isColorLight(colors.textPrimary);
+    if (isDark ? isTxtLight : !isTxtLight) {
+      result.textPrimary = colors.textPrimary;
+    }
+  }
+
+  // 3. dotsRegular: In dark mode dots must be light, in light mode dots must be dark
+  if (colors.dotsRegular && typeof colors.dotsRegular === 'string' && colors.dotsRegular.startsWith('#')) {
+    const isDotLight = isColorLight(colors.dotsRegular);
+    if (isDark ? isDotLight : !isDotLight) {
+      result.dotsRegular = colors.dotsRegular;
+    }
+  }
+
+  // 4. inputBg: In dark mode inputs must be dark, in light mode inputs must be light
+  if (colors.inputBg && typeof colors.inputBg === 'string' && colors.inputBg.startsWith('#')) {
+    const isInputLight = isColorLight(colors.inputBg);
+    if (isDark ? !isInputLight : isInputLight) {
+      result.inputBg = colors.inputBg;
+    }
+  }
+
+  // 5. borderColor: Valid hex string
+  if (colors.borderColor && typeof colors.borderColor === 'string' && colors.borderColor.startsWith('#')) {
+    result.borderColor = colors.borderColor;
+  }
+
+  // 6. Accent colors:
+  if (colors.textAccent && typeof colors.textAccent === 'string' && colors.textAccent.startsWith('#')) {
+    result.textAccent = colors.textAccent;
+  }
+  if (colors.graphicsAccent && typeof colors.graphicsAccent === 'string' && colors.graphicsAccent.startsWith('#')) {
+    result.graphicsAccent = colors.graphicsAccent;
+  }
+  if (colors.dotsAccent && typeof colors.dotsAccent === 'string' && colors.dotsAccent.startsWith('#')) {
+    result.dotsAccent = colors.dotsAccent;
+  }
+
+  return result;
+};
+
 export const loadSavedAppearanceColors = (isDark: boolean): SheetColorSettings => {
   try {
     const key = isDark ? 'vtm_custom_colors_dark' : 'vtm_custom_colors_light';
     const saved = localStorage.getItem(key);
     if (saved) {
       const parsed = JSON.parse(saved);
-      return {
-        ...(isDark ? DEFAULT_DARK_COLORS : DEFAULT_LIGHT_COLORS),
-        ...parsed,
-      };
+      return sanitizeColorSettings(parsed, isDark);
     }
   } catch {}
   return isDark ? { ...DEFAULT_DARK_COLORS } : { ...DEFAULT_LIGHT_COLORS };
@@ -161,6 +231,7 @@ export const loadSavedAppearanceColors = (isDark: boolean): SheetColorSettings =
 export const saveAppearanceColors = (isDark: boolean, colors: SheetColorSettings): void => {
   try {
     const key = isDark ? 'vtm_custom_colors_dark' : 'vtm_custom_colors_light';
-    localStorage.setItem(key, JSON.stringify(colors));
+    const sanitized = sanitizeColorSettings(colors, isDark);
+    localStorage.setItem(key, JSON.stringify(sanitized));
   } catch {}
 };

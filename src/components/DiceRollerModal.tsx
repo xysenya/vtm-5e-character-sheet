@@ -310,9 +310,9 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                 type="button"
                 onClick={handleRouseCheck}
                 className="px-3 py-2 bg-zinc-900 hover:bg-zinc-800 text-red-400 border border-red-900/40 text-xs font-bold rounded-lg cursor-pointer"
-                title="Бросок 1d10 на проверку крови"
+                title="Бросок 1d10 на Воззвание к Крови"
               >
-                🩸 Rouse Check
+                🩸 Воззвание к Крови
               </button>
               <button
                 type="button"
@@ -333,7 +333,7 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                 : 'bg-red-950/40 border-red-800 text-red-300'
             }`}>
               <span>
-                Проверка крови: выкинуто <strong className="font-mono text-sm">{rouseResult.roll}</strong> —{' '}
+                Воззвание к Крови: выкинуто <strong className="font-mono text-sm">{rouseResult.roll}</strong> —{' '}
                 {rouseResult.success ? 'УСПЕХ (Голод не вырос)' : 'ПРОВАЛ (Голод +1!)'}
               </span>
               <button
@@ -362,30 +362,30 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
                   <div className="text-amber-500 flex flex-col items-center gap-1">
                     <AlertOctagon className="w-10 h-10 animate-pulse text-amber-500" />
                     <span className="text-lg font-black tracking-wider uppercase font-serif">
-                      ГРЯЗНЫЙ ТРИУМФ (MESSY CRITICAL)!
+                      КРОВАВЫЙ ТРИУМФ (MESSY CRITICAL)!
                     </span>
                     <span className="text-xs text-amber-300">
-                      Успех достигнут ценой пробуждения Зверя! Сопутствующий ущерб или клановая мания.
+                      Успех достигнут ценой пробуждения Зверя! Сопутствующий ущерб, нарушение Маскарада или Одержимость.
                     </span>
                   </div>
                 ) : lastResult.isBestialFailure ? (
                   <div className="text-red-500 flex flex-col items-center gap-1">
                     <AlertOctagon className="w-10 h-10 animate-pulse text-red-500" />
                     <span className="text-lg font-black tracking-wider uppercase font-serif">
-                      ЗВЕРИНЫЙ ПРОВАЛ (BESTIAL FAILURE)!
+                      КРОВАВЫЙ ПРОВАЛ (BESTIAL FAILURE)!
                     </span>
                     <span className="text-xs text-red-300">
-                      Провал действия и выход Зверя из-под контроля! Немедленная компульсия.
+                      Провал действия и выход Зверя из-под контроля! Немедленная Одержимость (Наваждение).
                     </span>
                   </div>
                 ) : lastResult.critSuccess ? (
                   <div className="text-amber-400 flex flex-col items-center gap-1">
                     <Sparkles className="w-10 h-10 text-amber-400" />
                     <span className="text-lg font-black tracking-wider uppercase font-serif">
-                      КРИТИЧЕСКИЙ ТРИУМФ ({lastResult.successes} УСПЕХОВ)!
+                      ТРИУМФ ({lastResult.successes} УСПЕХОВ)!
                     </span>
                     <span className="text-xs text-amber-200">
-                      Великолепное исполнение без вмешательства Зверя.
+                      Великолепное исполнение без вмешательства Зверя (пара десяток).
                     </span>
                   </div>
                 ) : lastResult.isSuccess ? (

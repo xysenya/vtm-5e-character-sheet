@@ -357,7 +357,9 @@ export const SheetPage4: React.FC<SheetPage4Props> = ({
             }}
           >
             {/* Header bar with page badge and continuation subtitle (printed as well, with delete button hidden on print) */}
-            <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-300 dark:border-zinc-800 print:border-zinc-300 print:pb-1 print:mb-2">
+            <div className={`flex items-center justify-between pb-2 mb-2 border-b print:border-zinc-300 print:pb-1 print:mb-2 ${
+              isDark ? 'border-zinc-800' : 'border-zinc-300'
+            }`}>
               <div className="flex items-center gap-2 print:gap-1.5">
                 <span className={`font-benguiat text-xs font-bold uppercase tracking-wider print:text-black print:text-[11px] ${
                   isDark ? 'text-red-500' : 'text-red-800'

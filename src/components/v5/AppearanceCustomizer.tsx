@@ -229,9 +229,9 @@ export const AppearanceCustomizer: React.FC<AppearanceCustomizerProps> = ({
           }
 
           /* 3. Input fields, textareas, selects (strictly on character sheet, never inside modals) */
-          .page-break input:not([type=checkbox]):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
+          .page-break input:not([type=checkbox]):not(.match-sheet-bg):not(.vtm-skill-specialty-input):not(.vtm-merit-input):not(.vtm-flaw-input):not(.vtm-kindred-info-input):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
           .page-break select:not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *),
-          .page-break textarea:not(.match-sheet-bg):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *) {
+          .page-break textarea:not(.match-sheet-bg):not(.vtm-kindred-info-input):not([role="dialog"] *):not(#vtm-modal-container *):not(.vtm-modal-root *) {
             background-color: ${customColors.inputBg} !important;
             border-color: ${customColors.borderColor} !important;
             color: ${customColors.textPrimary} !important;
@@ -242,8 +242,20 @@ export const AppearanceCustomizer: React.FC<AppearanceCustomizerProps> = ({
             color: ${customColors.textPrimary}88 !important;
           }
 
-          .page-break textarea.match-sheet-bg {
+          /* Text fields of skills, merits/flaws, and kindred info must seamlessly match the sheet background across all themes */
+          .page-break input.match-sheet-bg,
+          .page-break textarea.match-sheet-bg,
+          .page-break div.match-sheet-bg,
+          .page-break .match-sheet-bg,
+          .page-break .vtm-skill-specialty-input,
+          .page-break .vtm-merit-input,
+          .page-break .vtm-flaw-input,
+          .page-break .vtm-kindred-info-input,
+          .page-break .vtm-kindred-info-section input,
+          .page-break .vtm-kindred-info-section textarea,
+          .page-break .vtm-kindred-info-section [contenteditable] {
             background-color: transparent !important;
+            background: transparent !important;
             border-color: ${customColors.borderColor} !important;
             color: ${customColors.textPrimary} !important;
           }
@@ -294,6 +306,12 @@ export const AppearanceCustomizer: React.FC<AppearanceCustomizerProps> = ({
           /* Notebook paper ruling lines on SheetPage4 */
           .page-break textarea.notebook-ruled-textarea {
             background-image: linear-gradient(to bottom, transparent 27px, ${customColors.graphicsAccent}44 27px, ${customColors.graphicsAccent}44 28px) !important;
+          }
+
+          /* Discipline cards and container panels */
+          .page-break .print-calib-disc-card {
+            background-color: ${customColors.inputBg} !important;
+            border-color: ${customColors.borderColor} !important;
           }
 
           /* 6. Regular Dots (Attributes, Skills, Humanity filled boxes) */

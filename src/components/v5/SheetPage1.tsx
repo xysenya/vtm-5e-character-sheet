@@ -784,14 +784,18 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
               }`}
             >
               <div className="flex items-start justify-between gap-2 pb-1.5 mb-1.5 border-b border-red-900/40">
-                <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-red-700 dark:text-red-500 font-sans">
+                <div className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] font-sans ${
+                  isDark ? 'text-red-500' : 'text-red-700'
+                }`}>
                   <HelpCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>Правила: Характеристики</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowAttrHelp(false)}
-                  className="text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-red-400 transition-colors p-0.5"
+                  className={`transition-colors p-0.5 ${
+                    isDark ? 'text-zinc-400 hover:text-red-400' : 'text-zinc-500 hover:text-black'
+                  }`}
                   title="Закрыть"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -972,14 +976,18 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
               }`}
             >
               <div className="flex items-start justify-between gap-2 pb-1.5 mb-1.5 border-b border-red-900/40">
-                <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-red-700 dark:text-red-500 font-sans">
+                <div className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] font-sans ${
+                  isDark ? 'text-red-500' : 'text-red-700'
+                }`}>
                   <HelpCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>Правила: Навыки</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowSkillsHelp(false)}
-                  className="text-zinc-500 hover:text-black dark:text-zinc-400 dark:hover:text-red-400 transition-colors p-0.5"
+                  className={`transition-colors p-0.5 ${
+                    isDark ? 'text-zinc-400 hover:text-red-400' : 'text-zinc-500 hover:text-black'
+                  }`}
                   title="Закрыть"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -1022,7 +1030,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
                   onChange={(e) => handleSkillSpecialtyChange(skill.id, e.target.value)}
                   placeholder={ph('')}
                   title="Специализация"
-                  className={`flex-1 min-w-[16px] mx-1 px-1 py-0 h-[18px] print:h-[18px] text-[11px] sm:text-[11.5px] print:text-[10px] font-serif italic bg-transparent border-t-0 border-l-0 border-r-0 border-b border-dotted outline-none rounded-none leading-normal print:leading-normal focus:outline-none focus:border-red-600 transition-colors ${
+                  className={`vtm-skill-specialty-input match-sheet-bg flex-1 min-w-[16px] mx-1 px-1 py-0 h-[18px] print:h-[18px] text-[11px] sm:text-[11.5px] print:text-[10px] font-serif italic bg-transparent border-t-0 border-l-0 border-r-0 border-b border-dotted outline-none rounded-none leading-normal print:leading-normal focus:outline-none focus:border-red-600 transition-colors ${
                     isDark
                       ? 'border-zinc-700/70 text-zinc-100 focus:border-red-500 placeholder:text-zinc-500'
                       : 'border-zinc-400/80 text-zinc-800 focus:border-red-700 placeholder:text-zinc-400'
@@ -1059,7 +1067,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
                   onChange={(e) => handleSkillSpecialtyChange(skill.id, e.target.value)}
                   placeholder={ph('')}
                   title="Специализация"
-                  className={`flex-1 min-w-[16px] mx-1 px-1 py-0 h-[18px] print:h-[18px] text-[11px] sm:text-[11.5px] print:text-[10px] font-serif italic bg-transparent border-t-0 border-l-0 border-r-0 border-b border-dotted outline-none rounded-none leading-normal print:leading-normal focus:outline-none focus:border-red-600 transition-colors ${
+                  className={`vtm-skill-specialty-input match-sheet-bg flex-1 min-w-[16px] mx-1 px-1 py-0 h-[18px] print:h-[18px] text-[11px] sm:text-[11.5px] print:text-[10px] font-serif italic bg-transparent border-t-0 border-l-0 border-r-0 border-b border-dotted outline-none rounded-none leading-normal print:leading-normal focus:outline-none focus:border-red-600 transition-colors ${
                     isDark
                       ? 'border-zinc-700/70 text-zinc-100 focus:border-red-500 placeholder:text-zinc-500'
                       : 'border-zinc-400/80 text-zinc-800 focus:border-red-700 placeholder:text-zinc-400'
@@ -1096,7 +1104,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
                   onChange={(e) => handleSkillSpecialtyChange(skill.id, e.target.value)}
                   placeholder={ph('')}
                   title="Специализация"
-                  className={`flex-1 min-w-[16px] mx-1 px-1 py-0 h-[18px] print:h-[18px] text-[11px] sm:text-[11.5px] print:text-[10px] font-serif italic bg-transparent border-t-0 border-l-0 border-r-0 border-b border-dotted outline-none rounded-none leading-normal print:leading-normal focus:outline-none focus:border-red-600 transition-colors ${
+                  className={`vtm-skill-specialty-input match-sheet-bg flex-1 min-w-[16px] mx-1 px-1 py-0 h-[18px] print:h-[18px] text-[11px] sm:text-[11.5px] print:text-[10px] font-serif italic bg-transparent border-t-0 border-l-0 border-r-0 border-b border-dotted outline-none rounded-none leading-normal print:leading-normal focus:outline-none focus:border-red-600 transition-colors ${
                     isDark
                       ? 'border-zinc-700/70 text-zinc-100 focus:border-red-500 placeholder:text-zinc-500'
                       : 'border-zinc-400/80 text-zinc-800 focus:border-red-700 placeholder:text-zinc-400'

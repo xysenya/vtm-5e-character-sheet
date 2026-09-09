@@ -212,8 +212,8 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
     const isSuccess = roll >= 6;
 
     const msg = isSuccess
-      ? 'Испытание крови - успех. Голод не меняется'
-      : 'Испытание крови - провал. Голод растет на 1';
+      ? 'Воззвание к Крови — успех. Голод не меняется'
+      : 'Воззвание к Крови — провал. Голод растет на 1';
 
     let dieImg = DICE_IMAGES.hblank;
     if (roll === 10) dieImg = DICE_IMAGES.hcrit;
@@ -230,7 +230,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       totalDice: 1,
       hungerDice: 1,
-      label: `Испытание крови (кость: ${roll})`,
+      label: `Воззвание к Крови (кость: ${roll})`,
       dice: [
         {
           type: 'hunger',
@@ -769,8 +769,8 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
             id="vtm-floating-rouse-button"
             onClick={handleRouseCheck}
             className="w-14 h-14 rounded-full bg-gradient-to-br from-rose-600 via-red-700 to-rose-950 hover:from-rose-500 hover:via-red-600 hover:to-rose-900 border-2 border-red-400/80 shadow-2xl shadow-red-950/90 flex items-center justify-center p-2.5 transition-all transform hover:scale-105 active:scale-95 cursor-pointer group relative"
-            title="Испытание крови (Rouse Check)"
-            aria-label="Совершить испытание крови"
+            title="Воззвание к Крови (Rouse Check)"
+            aria-label="Совершить Воззвание к Крови"
           >
             <Droplet className="w-6 h-6 text-red-100 fill-current filter drop-shadow-md transition-transform group-hover:scale-110" />
           </button>
@@ -1412,7 +1412,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                 className="w-4 h-4 rounded border-red-800 bg-zinc-900 text-red-600 focus:ring-red-500 focus:ring-offset-zinc-950 cursor-pointer shrink-0 accent-red-600"
               />
               <span className="font-serif text-[11.5px] leading-snug text-zinc-300">
-                Автоматическое заполнение голода при испытании крови
+                Автоматическое увеличение Голода при неудачном Воззвании к Крови
               </span>
               <Droplet
                 className={`w-3.5 h-3.5 shrink-0 ml-auto transition-colors ${

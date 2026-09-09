@@ -7,6 +7,7 @@ export interface CalibrationState {
   meritsRows: number;       // Количество строк преимуществ/недостатков
   bioHeight: number;        // Высота блоков "Внешность" и "История" (px)
   inventoryHeight: number;  // Высота блока "Инвентарь" (px)
+  relationshipMapHeight: number; // Высота блока схемы отношений (px)
   page1Gap: number;         // Отступы Стр. 1 (px)
   page2Gap: number;         // Отступы Стр. 2 (px)
   page3Gap: number;         // Отступы Стр. 3 (px)
@@ -20,6 +21,7 @@ export const DEFAULT_CALIBRATION: CalibrationState = {
   meritsRows: 17,
   bioHeight: 280,
   inventoryHeight: 140,
+  relationshipMapHeight: 820,
   page1Gap: 9,
   page2Gap: 5,
   page3Gap: 9,
@@ -49,6 +51,7 @@ export const loadSavedCalibration = (): CalibrationState => {
         meritsRows: typeof parsed.meritsRows === 'number' ? parsed.meritsRows : DEFAULT_CALIBRATION.meritsRows,
         bioHeight: typeof parsed.bioHeight === 'number' ? parsed.bioHeight : DEFAULT_CALIBRATION.bioHeight,
         inventoryHeight: typeof parsed.inventoryHeight === 'number' ? parsed.inventoryHeight : DEFAULT_CALIBRATION.inventoryHeight,
+        relationshipMapHeight: typeof parsed.relationshipMapHeight === 'number' ? parsed.relationshipMapHeight : DEFAULT_CALIBRATION.relationshipMapHeight,
         page1Gap: typeof parsed.page1Gap === 'number' ? parsed.page1Gap : legacyGap,
         page2Gap: typeof parsed.page2Gap === 'number' ? parsed.page2Gap : legacyGap,
         page3Gap: typeof parsed.page3Gap === 'number' ? parsed.page3Gap : legacyGap,
@@ -291,6 +294,13 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
           }
           .sheet-page-5 .print-calib-p5-rules-card {
             padding: ${Math.max(6, Math.round(state.page5Gap * 1.5))}px !important;
+          }
+
+          /* 8. Схема отношений: Высота холста при печати */
+          .sheet-page-relationship .print-calib-relationship-canvas {
+            height: ${state.relationshipMapHeight}px !important;
+            min-height: ${state.relationshipMapHeight}px !important;
+            max-height: ${state.relationshipMapHeight}px !important;
           }
         }
       `}</style>
@@ -552,6 +562,41 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
                           onClick={() => updateField('inventoryHeight', state.inventoryHeight + 10)}
                           className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
                           title="Увеличить на 10 px"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Control 6: Relationship Map Height */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[11px] font-serif">
+                        <span className="font-medium">6. Высота схемы отношений (Стр. 5)</span>
+                        <span className="font-mono text-red-500 font-bold">{state.relationshipMapHeight} px</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateField('relationshipMapHeight', state.relationshipMapHeight - 20)}
+                          className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                          title="Уменьшить на 20 px"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="number"
+                          step={20}
+                          value={state.relationshipMapHeight}
+                          onChange={(e) => updateField('relationshipMapHeight', parseInt(e.target.value, 10))}
+                          className={`flex-1 h-7 text-center font-mono text-xs border rounded px-1 font-bold ${
+                            isDark ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-zinc-50 border-zinc-300 text-black'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateField('relationshipMapHeight', state.relationshipMapHeight + 20)}
+                          className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                          title="Увеличить на 20 px"
                         >
                           +
                         </button>
