@@ -11,6 +11,7 @@ import {
 import { CLAN_THEMES } from '../../data/clans';
 import { ClanSymbol } from '../ClanSymbol';
 import { SheetHeader, SectionDivider } from './SheetHeader';
+import { RelationshipMapSidebar } from './RelationshipMapSidebar';
 import {
   Plus,
   Trash2,
@@ -608,7 +609,34 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
 
   // Zoom & Pan
   const [zoom, setZoom] = useState<number>(1);
-  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [pan, setPan] = useState<{ x: number; y: number }>(() => {
+    const targetCard =
+      mapData.cards.find((c) => c.type === 'pc') ||
+      mapData.cards.find(
+        (c) => c.name && sheet.info?.name && c.name.trim().toLowerCase() === sheet.info.name.trim().toLowerCase()
+      ) ||
+      mapData.cards.find((c) => c.type === 'player') ||
+      mapData.cards[0];
+
+    if (targetCard) {
+      const cardWidth = targetCard.width || CARD_WIDTH;
+      const cardHeight = targetCard.height || CARD_HEIGHT;
+      const cardCenterX = targetCard.x + cardWidth / 2;
+      const cardCenterY = targetCard.y + cardHeight / 2;
+      const estViewportW = 740;
+      const estViewportH = relationshipMapHeight || 820;
+      return {
+        x: Math.round(estViewportW / 2 - cardCenterX),
+        y: Math.round(estViewportH / 2 - cardCenterY),
+      };
+    }
+    return { x: 0, y: 0 };
+  });
+
+  // Centering lifecycle and user interaction tracking
+  const hasInitialCenteredRef = useRef<boolean>(false);
+  const userInteractedRef = useRef<boolean>(false);
+  const lastSheetIdRef = useRef<string | undefined>(sheet.id);
 
   // Sidebar visibility (collapsible on tablet/desktop)
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => {
@@ -791,6 +819,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
+      userInteractedRef.current = true;
       const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
       setZoom((prev) => Math.min(2.2, Math.max(0.4, +(prev * zoomFactor).toFixed(3))));
     };
@@ -836,6 +865,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
   const handlePointerDownCard = (card: RelationshipCard, e: React.PointerEvent) => {
     if (e.button !== 0) return;
     e.stopPropagation();
+    userInteractedRef.current = true;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     setDraggingCard({
       cardId: card.id,
@@ -848,31 +878,103 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
     setSelectedConnectionId(null);
   };
 
-  // Reset Zoom & Pan and center canvas on the player character card (or first card if multiple/none)
-  const handleResetView = () => {
-    const targetZoom = 1;
-    setZoom(targetZoom);
+  // Helper to center the canvas viewport on the player character card (or matching/first card)
+  const centerCanvasOnCharacter = useCallback(
+    (forcedZoom?: number) => {
+      const container = canvasContainerRef.current;
+      if (!container) return false;
+      const viewportWidth = container.clientWidth;
+      const viewportHeight = container.clientHeight;
+      if (viewportWidth <= 0 || viewportHeight <= 0) return false;
 
-    const container = canvasContainerRef.current;
-    const viewportWidth = container ? container.clientWidth : 750;
-    const viewportHeight = container ? container.clientHeight : 520;
+      const targetZoom = forcedZoom !== undefined ? forcedZoom : 1;
+      setZoom(targetZoom);
 
-    // Pick first PC card, or fallback to first card
-    const targetCard = mapData.cards.find((c) => c.type === 'pc') || mapData.cards[0];
+      // Priority:
+      // 1. Card of type 'pc' (персонаж игрока)
+      // 2. Card whose name matches character name in sheet.info
+      // 3. Card of type 'player'
+      // 4. First card in list
+      const targetCard =
+        mapData.cards.find((c) => c.type === 'pc') ||
+        mapData.cards.find(
+          (c) => c.name && sheet.info?.name && c.name.trim().toLowerCase() === sheet.info.name.trim().toLowerCase()
+        ) ||
+        mapData.cards.find((c) => c.type === 'player') ||
+        mapData.cards[0];
 
-    if (targetCard) {
-      const cardWidth = targetCard.width || CARD_WIDTH;
-      const cardHeight = getActualCardHeight(targetCard, cardHeights);
-      const cardCenterX = targetCard.x + cardWidth / 2;
-      const cardCenterY = targetCard.y + cardHeight / 2;
+      if (targetCard) {
+        const cardWidth = targetCard.width || CARD_WIDTH;
+        const cardHeight = getActualCardHeight(targetCard, cardHeights);
+        const cardCenterX = targetCard.x + cardWidth / 2;
+        const cardCenterY = targetCard.y + cardHeight / 2;
 
-      const newPanX = Math.round(viewportWidth / 2 - cardCenterX * targetZoom);
-      const newPanY = Math.round(viewportHeight / 2 - cardCenterY * targetZoom);
+        const newPanX = Math.round(viewportWidth / 2 - cardCenterX * targetZoom);
+        const newPanY = Math.round(viewportHeight / 2 - cardCenterY * targetZoom);
 
-      setPan({ x: newPanX, y: newPanY });
-    } else {
-      setPan({ x: 0, y: 0 });
+        setPan({ x: newPanX, y: newPanY });
+        return true;
+      } else {
+        setPan({ x: 0, y: 0 });
+        return true;
+      }
+    },
+    [mapData.cards, sheet.info?.name, cardHeights]
+  );
+
+  // When sheet ID changes (e.g. user loaded another character), allow re-centering on the new character card
+  useEffect(() => {
+    if (lastSheetIdRef.current !== sheet.id) {
+      lastSheetIdRef.current = sheet.id;
+      hasInitialCenteredRef.current = false;
+      userInteractedRef.current = false;
     }
+  }, [sheet.id]);
+
+  // Initial centering on mount / program launch
+  useEffect(() => {
+    if (hasInitialCenteredRef.current) return;
+
+    const ok = centerCanvasOnCharacter(1);
+    if (ok) {
+      hasInitialCenteredRef.current = true;
+    } else {
+      const rId = requestAnimationFrame(() => {
+        if (!hasInitialCenteredRef.current) {
+          const success = centerCanvasOnCharacter(1);
+          if (success) hasInitialCenteredRef.current = true;
+        }
+      });
+      return () => cancelAnimationFrame(rId);
+    }
+  }, [centerCanvasOnCharacter]);
+
+  // ResizeObserver: ensures precision once container is laid out or if window is resized before user interaction
+  useEffect(() => {
+    const el = canvasContainerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+          if (!hasInitialCenteredRef.current || !userInteractedRef.current) {
+            centerCanvasOnCharacter(1);
+            hasInitialCenteredRef.current = true;
+          }
+        }
+      }
+    });
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+    };
+  }, [centerCanvasOnCharacter]);
+
+  // Reset Zoom & Pan and center canvas on the player character card (100%)
+  const handleResetView = () => {
+    userInteractedRef.current = false;
+    centerCanvasOnCharacter(1);
   };
 
   // Pointer Down on empty Canvas (pan or deselect)
@@ -881,6 +983,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
     setSelectedCardId(null);
     setSelectedConnectionId(null);
     setIsPanning(true);
+    userInteractedRef.current = true;
     panStartRef.current = {
       x: e.clientX,
       y: e.clientY,
@@ -1110,12 +1213,52 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
       {/* 2. TABLET & DESKTOP INTERACTIVE MAP (Доступна на планшетах, ПК и при печати) */}
       {/* Лист имеет полную ширину A4. Кнопка и меню разворачиваются ПОВЕРХ листа. */}
       {/* ========================================================================= */}
-      <div className="hidden sm:flex print:flex flex-col justify-center items-center px-1 sm:px-3 w-full pb-10">
+      <div className="hidden sm:flex print:flex flex-col xl:flex-row justify-center items-center xl:items-start gap-4 xl:gap-6 px-1 sm:px-3 w-full pb-10">
+        {/* ========================================================================= */}
+        {/* DESKTOP SIDEBAR (Слева от листа персонажа, ВСЕГДА развернуто на ПК) */}
+        {/* ========================================================================= */}
+        <aside
+          id="vtm-map-sidebar-desktop"
+          className="no-print hidden xl:block w-72 2xl:w-80 shrink-0 sticky top-4 self-start max-h-[calc(100vh-2rem)] overflow-y-auto no-scrollbar rounded-xl shadow-xl z-20"
+        >
+          <RelationshipMapSidebar
+            isDark={isDark}
+            mapData={mapData}
+            cardMap={cardMap}
+            focusedCard={focusedCard}
+            focusedConnection={focusedConnection}
+            isOverlayMode={false}
+            onClearCardSelection={() => setSelectedCardId(null)}
+            onClearConnectionSelection={() => setSelectedConnectionId(null)}
+            onInvertConnection={handleInvertConnection}
+            onToggleBidirectional={(connectionId) => {
+              const nextConns = mapData.connections.map((c) =>
+                c.id === connectionId ? { ...c, isBidirectional: !c.isBidirectional } : c
+              );
+              updateMapData(mapData.cards, nextConns);
+            }}
+            onChangeConnectionLabel={(connectionId, label) => {
+              const nextConns = mapData.connections.map((c) =>
+                c.id === connectionId ? { ...c, customLabel: label } : c
+              );
+              updateMapData(mapData.cards, nextConns);
+            }}
+            onChangeConnectionType={handleChangeConnectionType}
+            onDeleteConnection={handleDeleteConnection}
+            onUpdateCard={updateCard}
+            onImageUpload={handleImageUpload}
+            onDuplicateCard={duplicateCard}
+            onDeleteCard={deleteCard}
+            onAddNewCard={handleAddNewCard}
+            onAddMyCharacter={handleAddMyCharacter}
+          />
+        </aside>
+
         {/* ========================================================================= */}
         {/* THE VERTICAL PRINTABLE SHEET (Стандартный вертикальный лист А4) */}
         {/* ========================================================================= */}
         <div
-          className={`relative w-full max-w-[210mm] mx-auto p-3 sm:p-5 md:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-relationship flex flex-col justify-start ${
+          className={`relative w-full max-w-[210mm] mx-auto xl:mx-0 p-3 sm:p-5 md:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-relationship flex flex-col justify-start ${
             isDark
               ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800'
               : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
@@ -1137,14 +1280,14 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
 
           {/* Canvas Area with Zoom/Pan controls, Obsidian Handles and Floating Sidebar */}
           <div className="relative w-full my-1">
-            {/* Кнопка разворачивания меню схемы отношений, висящая поверх листа */}
+            {/* Кнопка разворачивания меню схемы отношений (только для планшетов < xl, на ПК скрыта) */}
             {!isSidebarOpen && (
-              <div className="no-print absolute top-3 left-3 z-20">
+              <div className="no-print xl:hidden absolute top-3 left-3 z-20">
                 <button
                   type="button"
                   id="btn-open-map-sidebar"
                   onClick={toggleSidebar}
-                  className={`px-3 py-2 rounded-xl border shadow-lg cursor-pointer transition-all flex items-center gap-2 font-serif font-semibold text-xs group backdrop-blur-md ${
+                  className={`xl:hidden px-3 py-2 rounded-xl border shadow-lg cursor-pointer transition-all flex items-center gap-2 font-serif font-semibold text-xs group backdrop-blur-md ${
                     isDark
                       ? 'bg-zinc-950/90 border-zinc-800 text-zinc-200 hover:bg-zinc-900 hover:text-white shadow-black/80'
                       : 'bg-white/95 border-zinc-300 text-zinc-900 hover:bg-zinc-50 shadow-zinc-400/40'
@@ -1159,496 +1302,46 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
               </div>
             )}
 
-            {/* Меню схемы отношений, разворачивающееся поверх листа схемы без сужения самого листа */}
+            {/* Меню схемы отношений поверх листа (только для планшетов < xl, на ПК меню слева) */}
             {isSidebarOpen && (
               <aside
-                className="no-print absolute top-3 left-3 z-30 w-72 sm:w-80 max-w-[calc(100%-24px)] max-h-[82vh] overflow-y-auto no-scrollbar shadow-2xl rounded-xl transition-all"
+                id="vtm-map-sidebar-overlay"
+                className="no-print xl:hidden absolute top-3 left-3 z-30 w-72 sm:w-80 max-w-[calc(100%-24px)] max-h-[82vh] overflow-y-auto no-scrollbar shadow-2xl rounded-xl transition-all"
               >
-                <div
-                  className={`w-full rounded-xl border p-3.5 sm:p-4 shadow-2xl transition-all flex flex-col gap-3 backdrop-blur-xl ${
-                    isDark
-                      ? 'bg-[#141418]/95 border-zinc-750 text-zinc-200 shadow-black/95 ring-1 ring-white/5'
-                      : 'bg-white/95 border-zinc-300 text-zinc-900 shadow-xl shadow-zinc-400/25 ring-1 ring-zinc-200'
-                  }`}
-                >
-                  {/* Sidebar Top Bar: Title, Badges and Collapse Toggle */}
-                  <div className={`flex items-center justify-between pb-2 border-b ${isDark ? 'border-zinc-750' : 'border-zinc-200'}`}>
-                    <div className="flex items-center gap-2 min-w-0">
-                      <SlidersHorizontal className="w-4 h-4 text-red-500 shrink-0" />
-                      <h3 className={`font-serif font-bold text-xs sm:text-sm tracking-tight ${isDark ? 'text-white' : 'text-zinc-900'}`}>
-                        Меню схемы
-                      </h3>
-                      <span className={`text-[10px] px-1.5 py-0.2 rounded font-sans border font-medium ${
-                        isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-400' : 'bg-zinc-100 border-zinc-300 text-zinc-600'
-                      }`}>
-                        {mapData.cards.length} карт. / {mapData.connections.length} связ.
-                      </span>
-                    </div>
-
-                    <button
-                      type="button"
-                      id="btn-toggle-map-sidebar"
-                      onClick={toggleSidebar}
-                      className={`px-2 py-1 rounded text-xs font-serif font-medium cursor-pointer transition-all flex items-center gap-1 border shadow-2xs ${
-                        isDark
-                          ? 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border-zinc-700 hover:text-white'
-                          : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-300 hover:text-black'
-                      }`}
-                      title="Свернуть меню"
-                      aria-label="Свернуть меню"
-                    >
-                      <ChevronLeft className="w-3.5 h-3.5 text-red-500" />
-                      <span className="text-[11px]">Свернуть</span>
-                    </button>
-                  </div>
-
-              {/* ------------------------------------------------------------- */}
-              {/* CASE 1: CONNECTION IN FOCUS (Кликнули на стрелку) */}
-              {/* ------------------------------------------------------------- */}
-                {focusedConnection ? (
-                  <div className="space-y-3.5">
-                    <div className={`flex items-center justify-between pb-2 border-b ${isDark ? 'border-zinc-700/60' : 'border-zinc-200'}`}>
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className="w-3 h-3 rounded-full shrink-0"
-                          style={{ backgroundColor: CONNECTION_STYLES[focusedConnection.type]?.color || '#ef4444' }}
-                        />
-                        <h3 className={`font-serif font-bold text-sm ${isDark ? 'text-white' : '!text-zinc-900'}`}>Настройка связи</h3>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedConnectionId(null)}
-                        className={`p-1 rounded-md text-xs transition-colors cursor-pointer flex items-center gap-1 ${
-                          isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
-                        }`}
-                      >
-                        <X className="w-3.5 h-3.5" />
-                        <span className="text-[11px]">Снять выбор</span>
-                      </button>
-                    </div>
-
-                    {/* Connected Cards summary */}
-                    <div className={`p-2 rounded border text-xs flex items-center justify-between ${
-                      isDark ? 'bg-zinc-900/80 border-zinc-800 text-zinc-200' : 'bg-zinc-100 border-zinc-300 text-zinc-800'
-                    }`}>
-                      <div className="truncate font-serif">
-                        <strong className={`block truncate ${isDark ? 'text-white' : 'text-zinc-900'}`}>{cardMap.get(focusedConnection.fromId)?.name || 'А'}</strong>
-                  <span className={`text-[10px] ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>Начало ({focusedConnection.fromSide || 'сторона'})</span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-red-500 shrink-0 mx-2" />
-                <div className="truncate text-right font-serif">
-                  <strong className={`block truncate ${isDark ? 'text-white' : 'text-zinc-900'}`}>{cardMap.get(focusedConnection.toId)?.name || 'Б'}</strong>
-                  <span className={`text-[10px] ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>Конец ({focusedConnection.toSide || 'сторона'})</span>
-                </div>
-              </div>
-
-              {/* Invert Direction & Bidirectional Controls */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleInvertConnection(focusedConnection.id)}
-                  className={`flex-1 px-2.5 py-1.5 border text-xs rounded font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer font-serif ${
-                    isDark
-                      ? 'bg-red-950/40 hover:bg-red-900/60 border-red-800/60 text-red-200'
-                      : 'bg-red-50 hover:bg-red-100 border-red-300 text-red-800'
-                  }`}
-                  title="Поменять направление стрелки между карточками"
-                >
-                  <ArrowLeftRight className="w-3.5 h-3.5" />
-                  <span>Инвертировать</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
+                <RelationshipMapSidebar
+                  isDark={isDark}
+                  mapData={mapData}
+                  cardMap={cardMap}
+                  focusedCard={focusedCard}
+                  focusedConnection={focusedConnection}
+                  isOverlayMode={true}
+                  onToggleSidebar={toggleSidebar}
+                  onClearCardSelection={() => setSelectedCardId(null)}
+                  onClearConnectionSelection={() => setSelectedConnectionId(null)}
+                  onInvertConnection={handleInvertConnection}
+                  onToggleBidirectional={(connectionId) => {
                     const nextConns = mapData.connections.map((c) =>
-                      c.id === focusedConnection.id ? { ...c, isBidirectional: !c.isBidirectional } : c
+                      c.id === connectionId ? { ...c, isBidirectional: !c.isBidirectional } : c
                     );
                     updateMapData(mapData.cards, nextConns);
                   }}
-                  className={`px-2.5 py-1.5 border rounded text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer font-serif ${
-                    focusedConnection.isBidirectional
-                      ? isDark
-                        ? 'bg-emerald-950/60 text-emerald-300 border-emerald-700'
-                        : 'bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold'
-                      : isDark
-                      ? 'bg-zinc-900 text-zinc-400 border-zinc-700'
-                      : 'bg-zinc-100 text-zinc-700 border-zinc-300'
-                  }`}
-                  title="Сделать связь обоюдной (стрелки с обоих концов)"
-                >
-                  <span>{focusedConnection.isBidirectional ? 'Двунаправленная' : 'Односторонняя'}</span>
-                </button>
-              </div>
-
-              {/* Custom Label */}
-              <div className="space-y-1">
-                <label className={`text-[10.5px] font-semibold uppercase tracking-wider block font-serif ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  Подпись связи
-                </label>
-                <input
-                  type="text"
-                  value={focusedConnection.customLabel || ''}
-                  onChange={(e) => {
+                  onChangeConnectionLabel={(connectionId, label) => {
                     const nextConns = mapData.connections.map((c) =>
-                      c.id === focusedConnection.id ? { ...c, customLabel: e.target.value } : c
+                      c.id === connectionId ? { ...c, customLabel: label } : c
                     );
                     updateMapData(mapData.cards, nextConns);
                   }}
-                  placeholder={CONNECTION_STYLES[focusedConnection.type]?.label || 'Особое примечание...'}
-                  className={`w-full px-2.5 py-1.5 text-xs rounded border transition-colors ${
-                    isDark
-                      ? 'bg-zinc-900 border-zinc-700 text-white focus:border-red-600'
-                      : 'bg-zinc-50 border-zinc-300 text-zinc-900 focus:border-red-600'
-                  }`}
+                  onChangeConnectionType={handleChangeConnectionType}
+                  onDeleteConnection={handleDeleteConnection}
+                  onUpdateCard={updateCard}
+                  onImageUpload={handleImageUpload}
+                  onDuplicateCard={duplicateCard}
+                  onDeleteCard={deleteCard}
+                  onAddNewCard={handleAddNewCard}
+                  onAddMyCharacter={handleAddMyCharacter}
                 />
-              </div>
-
-              {/* 12 Relationship Types selector */}
-              <div className="space-y-1.5">
-                <label className={`text-[10.5px] font-semibold uppercase tracking-wider block font-serif ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  Выберите тип связи:
-                </label>
-                <div className="grid grid-cols-1 gap-1">
-                  {Object.values(CONNECTION_STYLES).map((style) => (
-                    <button
-                      key={style.type}
-                      type="button"
-                      onClick={() => handleChangeConnectionType(focusedConnection.id, style.type)}
-                      className={`w-full text-left p-1.5 rounded border text-xs flex items-center justify-between gap-2 transition-all cursor-pointer ${
-                        focusedConnection.type === style.type
-                          ? isDark
-                            ? 'ring-2 ring-red-500 bg-red-950/60 border-red-600 font-bold text-white'
-                            : 'ring-2 ring-red-400 bg-red-50 border-red-400 font-bold text-red-900'
-                          : isDark
-                          ? 'bg-zinc-900/70 hover:bg-zinc-800 border-zinc-800 text-zinc-300'
-                          : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-800'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: style.color }} />
-                        <span className="truncate font-serif">{style.label}</span>
-                      </div>
-                      <ConnectionArrowPreview styleConfig={style} />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Delete Connection */}
-              <div className={`pt-2 border-t ${isDark ? 'border-zinc-800' : 'border-zinc-200'}`}>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteConnection(focusedConnection.id)}
-                  className={`w-full px-2.5 py-1.5 border rounded text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer font-serif ${
-                    isDark
-                      ? 'bg-red-950/40 hover:bg-red-900/60 border-red-900/60 text-red-400 hover:text-red-200'
-                      : 'bg-red-50 hover:bg-red-100 border-red-300 text-red-700 hover:text-red-900'
-                  }`}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Удалить эту связь</span>
-                </button>
-              </div>
-            </div>
-          ) : focusedCard ? (
-            /* ------------------------------------------------------------- */
-            /* CASE 2: CARD IN FOCUS (Кликнули на карточку) */
-            /* ------------------------------------------------------------- */
-            <div className="space-y-3.5">
-              <div className={`flex items-center justify-between pb-2 border-b ${isDark ? 'border-zinc-700/60' : 'border-zinc-200'}`}>
-                <div className="flex items-center gap-1.5">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{
-                      backgroundColor:
-                        CARD_TYPES.find((t) => t.id === focusedCard.type)?.color || '#ef4444',
-                    }}
-                  />
-                  <h3 className={`font-serif font-bold text-sm ${isDark ? 'text-white' : '!text-zinc-900'}`}>Карточка в фокусе</h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedCardId(null)}
-                  className={`p-1 rounded-md text-xs transition-colors cursor-pointer flex items-center gap-1 ${
-                    isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
-                  }`}
-                >
-                  <X className="w-3.5 h-3.5" />
-                  <span className="text-[11px]">Закрыть</span>
-                </button>
-              </div>
-
-              {/* Card Image */}
-              <div className="space-y-1.5">
-                <label className={`text-[10.5px] font-semibold uppercase tracking-wider block font-serif ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  Изображение
-                </label>
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-12 h-12 rounded-lg border-2 overflow-hidden flex items-center justify-center shrink-0 relative ${
-                      isDark ? 'bg-zinc-900 border-zinc-700' : 'bg-zinc-100 border-zinc-300'
-                    }`}
-                  >
-                    {focusedCard.imageUrl ? (
-                      <img
-                        src={focusedCard.imageUrl}
-                        alt={focusedCard.name}
-                        className="w-full h-full object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center">
-                        {focusedCard.type === 'faction' ? (
-                          <Users className="w-6 h-6 text-emerald-500" />
-                        ) : focusedCard.type === 'location' ? (
-                          <Home className="w-6 h-6 text-indigo-500" />
-                        ) : focusedCard.type === 'player' ? (
-                          <User className="w-6 h-6 text-blue-500" />
-                        ) : (focusedCard.type === 'pc' || focusedCard.type === 'npc') && focusedCard.clan && CLAN_THEMES[focusedCard.clan as ClanId] ? (
-                          <ClanSymbol
-                            clan={focusedCard.clan as ClanId}
-                            className="w-7 h-7 opacity-70"
-                            color={CLAN_THEMES[focusedCard.clan as ClanId]?.accentColor}
-                          />
-                        ) : (
-                          <User className="w-6 h-6 text-zinc-500" />
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className={`w-full px-2.5 py-1 border text-xs rounded font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                        isDark
-                          ? 'bg-red-950/40 hover:bg-red-900/60 border-red-800/60 text-red-200'
-                          : 'bg-red-50 hover:bg-red-100 border-red-300 text-red-800'
-                      }`}
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      <span>Загрузить фото</span>
-                    </button>
-                    {focusedCard.imageUrl && (
-                      <button
-                        type="button"
-                        onClick={() => updateCard(focusedCard.id, { imageUrl: '' })}
-                        className={`text-[10px] cursor-pointer block text-center w-full ${
-                          isDark ? 'text-zinc-400 hover:text-red-400' : 'text-zinc-500 hover:text-red-600'
-                        }`}
-                      >
-                        Удалить фото
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Name */}
-              <div className="space-y-1">
-                <label className={`text-[10.5px] font-semibold uppercase tracking-wider block font-serif ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  Имя / Название
-                </label>
-                <input
-                  type="text"
-                  value={focusedCard.name}
-                  onChange={(e) => updateCard(focusedCard.id, { name: e.target.value })}
-                  placeholder="Имя Сородича, котерии или домена"
-                  className={`w-full px-2.5 py-1.5 text-xs rounded border transition-colors ${
-                    isDark
-                      ? 'bg-zinc-900 border-zinc-700 text-white focus:border-red-600'
-                      : 'bg-zinc-50 border-zinc-300 text-zinc-900 focus:border-red-600'
-                  }`}
-                />
-              </div>
-
-              {/* Type */}
-              <div className="space-y-1">
-                <label className={`text-[10.5px] font-semibold uppercase tracking-wider block font-serif ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  Тип карточки
-                </label>
-                <select
-                  value={focusedCard.type}
-                  onChange={(e) => {
-                    const nextType = e.target.value as RelationshipCardType;
-                    const patch: Partial<RelationshipCard> = { type: nextType };
-                    if (nextType === 'faction' || nextType === 'location' || nextType === 'player') {
-                      patch.clan = '';
-                    }
-                    updateCard(focusedCard.id, patch);
-                  }}
-                  className={`w-full px-2.5 py-1.5 text-xs rounded border transition-colors cursor-pointer ${
-                    isDark
-                      ? 'bg-zinc-900 border-zinc-700 text-white focus:border-red-600'
-                      : 'bg-zinc-50 border-zinc-300 text-zinc-900 focus:border-red-600'
-                  }`}
-                >
-                  {CARD_TYPES.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Clan selector (ONLY if character: PC or NPC) */}
-              {(focusedCard.type === 'pc' || focusedCard.type === 'npc') && (
-                <div className="space-y-1">
-                  <label className={`text-[10.5px] font-semibold uppercase tracking-wider block font-serif ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                    Клан Сородича
-                  </label>
-                  <select
-                    value={focusedCard.clan || 'ventrue'}
-                    onChange={(e) => updateCard(focusedCard.id, { clan: e.target.value as ClanId })}
-                    className={`w-full px-2.5 py-1.5 text-xs rounded border transition-colors cursor-pointer ${
-                      isDark
-                        ? 'bg-zinc-900 border-zinc-700 text-white focus:border-red-600'
-                        : 'bg-zinc-50 border-zinc-300 text-zinc-900 focus:border-red-600'
-                    }`}
-                  >
-                    <option value="">Без клана / Не Сородич</option>
-                    {Object.values(CLAN_THEMES).map((cl) => (
-                      <option key={cl.id} value={cl.id}>
-                        {cl.name} ({cl.nameEn})
-                      </option>
-                    ))}
-                    <option value="thinblood">Слабокровный (Thin-blood)</option>
-                    <option value="mortal">Смертный (Mortal)</option>
-                  </select>
-                </div>
-              )}
-
-              {/* Notes */}
-              <div className="space-y-1">
-                <label className={`text-[10.5px] font-semibold uppercase tracking-wider block font-serif ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  Заметки
-                </label>
-                <textarea
-                  rows={2}
-                  value={focusedCard.notes || ''}
-                  onChange={(e) => updateCard(focusedCard.id, { notes: e.target.value })}
-                  placeholder="Статус, секреты, положение в городе..."
-                  className={`w-full px-2.5 py-1.5 text-xs rounded border resize-none transition-colors ${
-                    isDark
-                      ? 'bg-zinc-900 border-zinc-700 text-white focus:border-red-600'
-                      : 'bg-zinc-50 border-zinc-300 text-zinc-900 focus:border-red-600'
-                  }`}
-                />
-              </div>
-
-              {/* Actions */}
-              <div className={`pt-2 border-t flex items-center gap-2 ${isDark ? 'border-zinc-800' : 'border-zinc-200'}`}>
-                <button
-                  type="button"
-                  onClick={() => duplicateCard(focusedCard.id)}
-                  className={`flex-1 px-2 py-1.5 border rounded text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer font-serif ${
-                    isDark
-                      ? 'bg-zinc-900 hover:bg-zinc-800 border-zinc-700 text-zinc-300'
-                      : 'bg-zinc-100 hover:bg-zinc-200 border-zinc-300 text-zinc-700'
-                  }`}
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Дубликат</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => deleteCard(focusedCard.id)}
-                  className={`px-2.5 py-1.5 border rounded text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer font-serif ${
-                    isDark
-                      ? 'bg-red-950/40 hover:bg-red-900/60 border-red-900/60 text-red-400 hover:text-red-200'
-                      : 'bg-red-50 hover:bg-red-100 border-red-300 text-red-700 hover:text-red-900'
-                  }`}
-                  title="Удалить карточку"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  <span>Удалить</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            /* ------------------------------------------------------------- */
-            /* CASE 3: NO SELECTION (Главное меню схемы) */
-            /* ------------------------------------------------------------- */
-            <div className="space-y-3">
-              <div className={`pb-1 border-b ${isDark ? 'border-zinc-800' : 'border-zinc-200'}`}>
-                <h3 className={`font-serif font-bold text-sm flex items-center gap-1.5 ${isDark ? 'text-white' : '!text-zinc-900'}`}>
-                  <Link2 className="w-4 h-4 text-red-500" />
-                  <span>Схема отношений</span>
-                </h3>
-                <p className={`text-[11px] font-serif leading-tight pt-1 ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  Потяните от круглых точек по краям карточки (как в Obsidian), чтобы провести связь.
-                </p>
-              </div>
-
-              {/* Buttons */}
-              <div className="space-y-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleAddNewCard('npc')}
-                  className="w-full px-3 py-1.5 bg-red-900/80 hover:bg-red-800 text-white font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer font-serif"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>+ Создать карточку</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={handleAddMyCharacter}
-                  className={`w-full px-2.5 py-1 border rounded text-[11px] transition-colors flex items-center justify-center gap-1.5 cursor-pointer font-serif ${
-                    isDark
-                      ? 'bg-zinc-900 hover:bg-zinc-800 text-amber-300 border-amber-900/40'
-                      : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200'
-                  }`}
-                  title="Добавить текущего персонажа с листа на холст"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Добавить моего персонажа</span>
-                </button>
-              </div>
-
-              {/* Relationship Types Legend */}
-              <div className="space-y-1">
-                <span className={`text-[10px] font-semibold uppercase tracking-wider block font-sans ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  Виды связей (12 типов):
-                </span>
-                <div className="space-y-1">
-                  {Object.values(CONNECTION_STYLES).map((conn) => (
-                    <div
-                      key={conn.type}
-                      className={`p-1.5 rounded border text-xs flex items-center justify-between gap-2 ${
-                        isDark ? 'bg-zinc-900/60 border-zinc-800 text-zinc-300' : 'bg-zinc-50 border-zinc-200 text-zinc-800'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: conn.color }} />
-                        <span className={`font-serif text-[11px] truncate font-medium ${isDark ? 'text-zinc-200' : 'text-zinc-800'}`}>{conn.label}</span>
-                      </div>
-                      <ConnectionArrowPreview styleConfig={conn} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Connections count summary */}
-              <div className={`pt-2 border-t text-[11px] font-serif flex items-center justify-between ${
-                isDark ? 'border-zinc-800 text-zinc-400' : 'border-zinc-200 text-zinc-600'
-              }`}>
-                <span>Карточек: <strong className={isDark ? 'text-white' : 'text-zinc-900'}>{mapData.cards.length}</strong></span>
-                <span>Связей: <strong className={isDark ? 'text-white' : 'text-zinc-900'}>{mapData.connections.length}</strong></span>
-              </div>
-            </div>
-          )}
-        </div>
-      </aside>
-    )}
+              </aside>
+            )}
 
           {/* Floating Zoom & Pan Controls on Canvas (no-print) */}
           <div
@@ -1660,7 +1353,10 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
           >
             <button
               type="button"
-              onClick={() => setZoom((prev) => Math.min(2.2, +(prev + 0.15).toFixed(2)))}
+              onClick={() => {
+                userInteractedRef.current = true;
+                setZoom((prev) => Math.min(2.2, +(prev + 0.15).toFixed(2)));
+              }}
               className={`p-1 rounded transition-colors cursor-pointer ${
                 isDark ? 'text-zinc-300 hover:text-white hover:bg-zinc-800' : 'text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100'
               }`}
@@ -1677,7 +1373,10 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
             </span>
             <button
               type="button"
-              onClick={() => setZoom((prev) => Math.max(0.4, +(prev - 0.15).toFixed(2)))}
+              onClick={() => {
+                userInteractedRef.current = true;
+                setZoom((prev) => Math.max(0.4, +(prev - 0.15).toFixed(2)));
+              }}
               className={`p-1 rounded transition-colors cursor-pointer ${
                 isDark ? 'text-zinc-300 hover:text-white hover:bg-zinc-800' : 'text-zinc-700 hover:text-zinc-950 hover:bg-zinc-100'
               }`}
