@@ -1419,19 +1419,25 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
           >
             {/* Transform Container for Zoom and Pan */}
             <div
-              className="absolute inset-0 origin-top-left pointer-events-none"
+              className="absolute inset-0 origin-top-left pointer-events-none overflow-visible"
               style={{
                 transform: `translate3d(${pan.x}px, ${pan.y}px, 0) scale(${zoom})`,
                 width: CANVAS_VIRTUAL_WIDTH,
                 height: CANVAS_VIRTUAL_HEIGHT,
+                overflow: 'visible',
               }}
             >
               {/* ------------------------------------------------------------- */}
               {/* SVG CONNECTION LINES LAYER */}
               {/* ------------------------------------------------------------- */}
               <svg
-                className="absolute inset-0 w-full h-full pointer-events-none"
-                style={{ zIndex: 1, width: CANVAS_VIRTUAL_WIDTH, height: CANVAS_VIRTUAL_HEIGHT }}
+                className="absolute inset-0 w-full h-full pointer-events-none overflow-visible"
+                style={{
+                  zIndex: 1,
+                  width: CANVAS_VIRTUAL_WIDTH,
+                  height: CANVAS_VIRTUAL_HEIGHT,
+                  overflow: 'visible',
+                }}
               >
                 <defs>
                   {Object.values(CONNECTION_STYLES).map((st) => (
@@ -1445,6 +1451,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
                         markerWidth="7"
                         markerHeight="7"
                         orient="auto"
+                        overflow="visible"
                       >
                         <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill={st.color} />
                       </marker>
@@ -1457,6 +1464,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
                         markerWidth="7"
                         markerHeight="7"
                         orient="auto-start-reverse"
+                        overflow="visible"
                       >
                         <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill={st.color} />
                       </marker>
@@ -1471,6 +1479,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
                     markerWidth="7"
                     markerHeight="7"
                     orient="auto"
+                    overflow="visible"
                   >
                     <path d="M 0 1.5 L 10 5 L 0 8.5 z" fill="#ef4444" />
                   </marker>
