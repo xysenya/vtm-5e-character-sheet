@@ -9,7 +9,7 @@ import { AutoFitTextarea } from './AutoFitTextarea';
 import { MeritFlawSelectModal } from './MeritFlawSelectModal';
 import { AdvantageDetailModal } from './AdvantageDetailModal';
 import { AdvantageItem } from '../../data/advantages';
-import { BookOpen, Eye } from 'lucide-react';
+import { BookOpen, Eye, RotateCcw } from 'lucide-react';
 
 interface SheetPage2Props {
   sheet: CharacterSheet;
@@ -484,10 +484,21 @@ export const SheetPage2: React.FC<SheetPage2Props> = ({
           <div className="flex flex-col justify-between gap-2.5 sm:gap-3 print:gap-2">
             {/* CLAN BANE */}
             <div className="flex flex-col">
-              <div className="flex items-center h-5 mb-1 shrink-0">
+              <div className="flex items-center justify-between h-5 mb-1 shrink-0">
                 <label className={`font-benguiat font-bold uppercase tracking-wider text-[11px] ${isDark ? 'text-red-500' : 'text-red-800'}`}>
                   Клановый изъян
                 </label>
+                {currentClanTheme.bane && (
+                  <button
+                    type="button"
+                    onClick={() => handleBloodTraitChange('clanBane', currentClanTheme.bane)}
+                    className="print:hidden text-[10px] text-zinc-500 hover:text-red-400 transition-colors cursor-pointer flex items-center gap-1 opacity-70 hover:opacity-100"
+                    title="Загрузить официальный текст изъяна V5 для текущего клана"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    <span className="hidden sm:inline">По умолчанию</span>
+                  </button>
+                )}
               </div>
               <AutoFitTextarea
                 value={blood.clanBane}
@@ -502,10 +513,21 @@ export const SheetPage2: React.FC<SheetPage2Props> = ({
 
             {/* CLAN COMPULSION */}
             <div className="flex flex-col">
-              <div className="flex items-center h-5 mb-1 shrink-0">
+              <div className="flex items-center justify-between h-5 mb-1 shrink-0">
                 <label className={`font-benguiat font-bold uppercase tracking-wider text-[11px] ${isDark ? 'text-red-500' : 'text-red-800'}`}>
                   Клановая мания
                 </label>
+                {currentClanTheme.compulsion && (
+                  <button
+                    type="button"
+                    onClick={() => handleBloodTraitChange('clanCompulsion', currentClanTheme.compulsion)}
+                    className="print:hidden text-[10px] text-zinc-500 hover:text-red-400 transition-colors cursor-pointer flex items-center gap-1 opacity-70 hover:opacity-100"
+                    title="Загрузить официальный текст мании V5 для текущего клана"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    <span className="hidden sm:inline">По умолчанию</span>
+                  </button>
+                )}
               </div>
               <AutoFitTextarea
                 value={blood.clanCompulsion}
