@@ -90,33 +90,44 @@ export const SheetPage5: React.FC<SheetPage5Props> = ({
               {/* Card 3: Difficulties */}
               <div className={`p-3.5 rounded-sm border print-calib-p5-rules-card ${cardBg}`}>
                 <div className={`font-benguiat font-bold text-xs uppercase tracking-wider pb-1.5 mb-2 border-b border-red-900/20 ${isDark ? 'text-red-500' : 'text-red-800'}`}>
-                  Таблица сложности
+                  Таблица сложностей бросков
                 </div>
                 <table className="w-full text-left font-serif text-[11px]">
                   <tbody>
                     <tr className={`border-b ${isDark ? 'border-zinc-800' : 'border-red-950/10'}`}>
-                      <td className={`py-1 font-mono font-bold w-16 ${isDark ? 'text-red-500' : 'text-red-800'}`}>Сложн. 1</td>
-                      <td className="py-1">Рутинная задача (без давления)</td>
+                      <td className={`py-1 font-mono font-bold w-7 text-center ${isDark ? 'text-red-500' : 'text-red-800'}`}>1</td>
+                      <td className={`py-1 font-semibold w-24 sm:w-28 pr-1.5 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Элементарная</td>
+                      <td className={`py-1 text-[10.5px] leading-tight ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>ударить неподвижную цель</td>
                     </tr>
                     <tr className={`border-b ${isDark ? 'border-zinc-800' : 'border-red-950/10'}`}>
-                      <td className={`py-1 font-mono font-bold ${isDark ? 'text-red-500' : 'text-red-800'}`}>Сложн. 2</td>
-                      <td className="py-1">Прямолинейное действие для опытного</td>
+                      <td className={`py-1 font-mono font-bold w-7 text-center ${isDark ? 'text-red-500' : 'text-red-800'}`}>2</td>
+                      <td className={`py-1 font-semibold w-24 sm:w-28 pr-1.5 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Простая</td>
+                      <td className={`py-1 text-[10.5px] leading-tight ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>запугать слабовольного человека</td>
                     </tr>
                     <tr className={`border-b ${isDark ? 'border-zinc-800' : 'border-red-950/10'}`}>
-                      <td className={`py-1 font-mono font-bold ${isDark ? 'text-red-500' : 'text-red-800'}`}>Сложн. 3</td>
-                      <td className="py-1">Умеренно сложная задача</td>
+                      <td className={`py-1 font-mono font-bold w-7 text-center ${isDark ? 'text-red-500' : 'text-red-800'}`}>3</td>
+                      <td className={`py-1 font-semibold w-24 sm:w-28 pr-1.5 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Непростая</td>
+                      <td className={`py-1 text-[10.5px] leading-tight ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>пройтись по канату</td>
                     </tr>
                     <tr className={`border-b ${isDark ? 'border-zinc-800' : 'border-red-950/10'}`}>
-                      <td className={`py-1 font-mono font-bold ${isDark ? 'text-red-500' : 'text-red-800'}`}>Сложн. 4</td>
-                      <td className="py-1">Трудное испытание под стрессом</td>
+                      <td className={`py-1 font-mono font-bold w-7 text-center ${isDark ? 'text-red-500' : 'text-red-800'}`}>4</td>
+                      <td className={`py-1 font-semibold w-24 sm:w-28 pr-1.5 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Серьёзная</td>
+                      <td className={`py-1 text-[10.5px] leading-tight ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>создать произведение искусства</td>
                     </tr>
                     <tr className={`border-b ${isDark ? 'border-zinc-800' : 'border-red-950/10'}`}>
-                      <td className={`py-1 font-mono font-bold ${isDark ? 'text-red-500' : 'text-red-800'}`}>Сложн. 5</td>
-                      <td className="py-1">Экстремальная ситуация мастера</td>
+                      <td className={`py-1 font-mono font-bold w-7 text-center ${isDark ? 'text-red-500' : 'text-red-800'}`}>5</td>
+                      <td className={`py-1 font-semibold w-24 sm:w-28 pr-1.5 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Сложная</td>
+                      <td className={`py-1 text-[10.5px] leading-tight ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>убедить полицейского, что ты не под кайфом</td>
+                    </tr>
+                    <tr className={`border-b ${isDark ? 'border-zinc-800' : 'border-red-950/10'}`}>
+                      <td className={`py-1 font-mono font-bold w-7 text-center ${isDark ? 'text-red-500' : 'text-red-800'}`}>6</td>
+                      <td className={`py-1 font-semibold w-24 sm:w-28 pr-1.5 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Невероятно сложная</td>
+                      <td className={`py-1 text-[10.5px] leading-tight ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>бежать по канату под пулями</td>
                     </tr>
                     <tr>
-                      <td className={`py-1 font-mono font-bold ${isDark ? 'text-red-500' : 'text-red-800'}`}>Сложн. 6+</td>
-                      <td className="py-1">Сверхчеловеческий подвиг</td>
+                      <td className={`py-1 font-mono font-bold w-7 text-center ${isDark ? 'text-red-500' : 'text-red-800'}`}>7+</td>
+                      <td className={`py-1 font-semibold w-24 sm:w-28 pr-1.5 ${isDark ? 'text-zinc-200' : 'text-zinc-900'}`}>Почти невыполнимая</td>
+                      <td className={`py-1 text-[10.5px] leading-tight ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>найти конкретного бездомного в Лос-Анджелесе за ночь</td>
                     </tr>
                   </tbody>
                 </table>

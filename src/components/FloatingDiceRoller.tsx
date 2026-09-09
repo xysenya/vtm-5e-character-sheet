@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CharacterSheet } from '../types';
 import { DICE_IMAGES } from '../utils/diceImages';
-import { Dices, Trash2, X, Plus, Minus, History, RotateCcw, Droplet, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Dices, Trash2, X, Plus, Minus, History, RotateCcw, Droplet, CheckCircle2, AlertCircle, ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
 
 export const showFloatingDiceToast = (
   message: string,
@@ -163,6 +163,26 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
       localStorage.setItem('vtm_auto_hunger_on_rouse', JSON.stringify(autoHungerOnRouse));
     } catch {}
   }, [autoHungerOnRouse]);
+
+  // Collapsible settings box state: default collapsed on mobile (<640px) to save vertical space
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('vtm_dice_settings_open');
+      if (saved !== null) return JSON.parse(saved);
+      if (typeof window !== 'undefined' && window.innerWidth < 640) {
+        return false;
+      }
+      return true;
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('vtm_dice_settings_open', JSON.stringify(isSettingsOpen));
+    } catch {}
+  }, [isSettingsOpen]);
 
   // Rouse check & dice warning popup notification state
   const [rouseNotification, setRouseNotification] = useState<{
@@ -797,7 +817,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
       {isOpen && (
         <div
           id="vtm-floating-dice-container"
-          className="fixed bottom-24 right-4 sm:right-6 z-50 print:hidden flex flex-col md:flex-row items-end md:items-end gap-3 max-w-[calc(100vw-2rem)] animate-in fade-in slide-in-from-bottom-5 duration-200"
+          className="fixed bottom-20 sm:bottom-24 right-2 sm:right-6 z-50 print:hidden flex flex-col md:flex-row items-end md:items-end gap-2 sm:gap-3 max-w-[calc(100vw-1rem)] sm:max-w-[calc(100vw-2rem)] animate-in fade-in slide-in-from-bottom-5 duration-200"
         >
           {/* Roll History Window (Collapsible, default collapsed, expands to the left) */}
           <AnimatePresence>
@@ -809,10 +829,10 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                 exit={{ opacity: 0, x: 20, scale: 0.95 }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
                 id="vtm-floating-dice-history"
-                className="w-72 sm:w-80 bg-zinc-950/95 backdrop-blur-md border border-red-900/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-zinc-200 max-h-80 sm:max-h-96 md:max-h-[520px] shrink-0"
+                className="w-72 sm:w-80 bg-zinc-950/95 backdrop-blur-md border border-red-900/60 rounded-xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden text-zinc-200 max-h-64 sm:max-h-96 md:max-h-[520px] shrink-0"
               >
                 {/* Header with Clear and Collapse buttons */}
-                <div className="bg-gradient-to-r from-zinc-900 to-zinc-950 border-b border-red-900/30 px-3.5 py-2.5 flex items-center justify-between">
+                <div className="bg-gradient-to-r from-zinc-900 to-zinc-950 border-b border-red-900/30 px-3 py-2 sm:px-3.5 sm:py-2.5 flex items-center justify-between">
                   <div className="flex items-center gap-1.5 text-xs font-serif font-semibold text-zinc-300">
                     <History className="w-3.5 h-3.5 text-red-400" />
                     <span>История бросков</span>
@@ -845,7 +865,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                 </div>
 
                 {/* History List */}
-                <div className="p-3 overflow-y-auto space-y-2 flex-1 scrollbar-thin scrollbar-thumb-zinc-800">
+                <div className="p-2.5 sm:p-3 overflow-y-auto space-y-2 flex-1 scrollbar-thin scrollbar-thumb-zinc-800">
                   {history.length === 0 ? (
                     <div className="text-center py-8 text-zinc-500 text-xs font-serif flex flex-col items-center justify-center gap-2">
                       <Dices className="w-8 h-8 text-zinc-700" />
@@ -904,27 +924,27 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
           </AnimatePresence>
 
           {/* Main Roller Column (Dice Roller Window + Checkbox underneath) */}
-          <div className="w-80 sm:w-96 flex flex-col gap-2 shrink-0">
+          <div className="w-[310px] xs:w-80 sm:w-96 flex flex-col gap-1.5 sm:gap-2 shrink-0 max-h-[calc(100dvh-5.5rem)]">
             {/* Main Floating Window: "Бросок костей" */}
             <div
               id="vtm-floating-dice-roller"
-              className="bg-zinc-950/95 backdrop-blur-md border border-red-900/60 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-zinc-200"
+              className="bg-zinc-950/95 backdrop-blur-md border border-red-900/60 rounded-xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden text-zinc-200 max-h-[calc(100dvh-8.5rem)] sm:max-h-none"
             >
-              {/* Header with Title, Mode Switcher & History Toggle */}
-              <div className="bg-gradient-to-r from-red-950/90 via-zinc-900 to-zinc-950 border-b border-red-900/40 px-3.5 py-2.5 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 shrink-0">
-                  <img src={DICE_IMAGES.icon} alt="Кости" className="w-5 h-5 object-contain" />
-                  <span className="font-serif font-bold text-red-100 text-sm tracking-wide">
+              {/* Header with Title, Mode Switcher, History Toggle & Close */}
+              <div className="bg-gradient-to-r from-red-950/90 via-zinc-900 to-zinc-950 border-b border-red-900/40 px-2.5 sm:px-3.5 py-2 sm:py-2.5 flex items-center justify-between gap-1.5 sm:gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                  <img src={DICE_IMAGES.icon} alt="Кости" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
+                  <span className="font-serif font-bold text-red-100 text-xs sm:text-sm tracking-wide">
                     Бросок костей
                   </span>
                 </div>
 
                 {/* Mode Switcher Tabs */}
-                <div className="flex items-center gap-1 bg-zinc-900/90 p-0.5 rounded-lg border border-zinc-800 text-[11px]">
+                <div className="flex items-center gap-1 bg-zinc-900/90 p-0.5 rounded-lg border border-zinc-800 text-[10px] sm:text-[11px]">
                   <button
                     type="button"
                     onClick={() => setRollerMode('trait')}
-                    className={`px-2 py-1 font-serif font-medium rounded-md transition-all cursor-pointer ${
+                    className={`px-1.5 py-0.5 sm:px-2 sm:py-1 font-serif font-medium rounded-md transition-all cursor-pointer ${
                       rollerMode === 'trait'
                         ? 'bg-red-900 text-white shadow-sm font-bold'
                         : 'text-zinc-400 hover:text-zinc-200'
@@ -936,7 +956,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                   <button
                     type="button"
                     onClick={() => setRollerMode('manual')}
-                    className={`px-2 py-1 font-serif font-medium rounded-md transition-all cursor-pointer ${
+                    className={`px-1.5 py-0.5 sm:px-2 sm:py-1 font-serif font-medium rounded-md transition-all cursor-pointer ${
                       rollerMode === 'manual'
                         ? 'bg-red-900 text-white shadow-sm font-bold'
                         : 'text-zinc-400 hover:text-zinc-200'
@@ -947,40 +967,54 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                   </button>
                 </div>
 
-                {/* History Toggle Button replacing Close Button */}
-                <button
-                  type="button"
-                  id="vtm-toggle-history-btn"
-                  onClick={() => setIsHistoryOpen((prev) => !prev)}
-                  className={`w-7 h-7 flex items-center justify-center rounded-lg transition-all cursor-pointer shrink-0 relative ${
-                    isHistoryOpen
-                      ? 'bg-red-900/90 text-red-100 border border-red-700/80 shadow-sm'
-                      : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent'
-                  }`}
-                  title={isHistoryOpen ? 'Свернуть историю бросков' : 'Развернуть историю бросков'}
-                  aria-label={isHistoryOpen ? 'Свернуть историю бросков' : 'Развернуть историю бросков'}
-                >
-                  <History className="w-4 h-4" />
-                  {history.length > 0 && !isHistoryOpen && (
-                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-red-500 ring-1 ring-zinc-950" />
-                  )}
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* History Toggle Button */}
+                  <button
+                    type="button"
+                    id="vtm-toggle-history-btn"
+                    onClick={() => setIsHistoryOpen((prev) => !prev)}
+                    className={`w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg transition-all cursor-pointer relative ${
+                      isHistoryOpen
+                        ? 'bg-red-900/90 text-red-100 border border-red-700/80 shadow-sm'
+                        : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 border border-transparent'
+                    }`}
+                    title={isHistoryOpen ? 'Свернуть историю бросков' : 'Развернуть историю бросков'}
+                    aria-label={isHistoryOpen ? 'Свернуть историю бросков' : 'Развернуть историю бросков'}
+                  >
+                    <History className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    {history.length > 0 && !isHistoryOpen && (
+                      <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-red-500 ring-1 ring-zinc-950" />
+                    )}
+                  </button>
+
+                  {/* Close button */}
+                  <button
+                    type="button"
+                    id="vtm-close-dice-btn"
+                    onClick={onClose}
+                    className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/60 transition-colors cursor-pointer"
+                    title="Закрыть окно броска"
+                    aria-label="Закрыть окно броска"
+                  >
+                    <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  </button>
+                </div>
               </div>
 
-            <div className="p-4 space-y-3.5">
+            <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3.5 overflow-y-auto scrollbar-thin flex-1">
               {/* --- POOL SELECTION SECTION --- */}
               {rollerMode === 'trait' ? (
                 /* Trait Check Mode (Attribute + Skill auto-calculation) */
-                <div className="space-y-2 bg-zinc-900/40 p-3 rounded-xl border border-zinc-800/80">
+                <div className="space-y-1.5 sm:space-y-2 bg-zinc-900/40 p-2 sm:p-3 rounded-xl border border-zinc-800/80">
                   <div className="flex items-center justify-between text-xs text-zinc-300 font-serif">
-                    <span className="font-semibold text-zinc-200 flex items-center gap-1.5">
+                    <span className="font-semibold text-zinc-200 flex items-center gap-1.5 text-[11px] sm:text-xs">
                       <span>Пул проверки:</span>
                     </span>
                     {(trait1 || trait2) && (
                       <button
                         type="button"
                         onClick={handleClearBothTraits}
-                        className="text-[11px] text-zinc-400 hover:text-red-400 flex items-center gap-1 transition-colors cursor-pointer"
+                        className="text-[10px] sm:text-[11px] text-zinc-400 hover:text-red-400 flex items-center gap-1 transition-colors cursor-pointer"
                         title="Очистить оба ресурса"
                       >
                         <RotateCcw className="w-3 h-3" />
@@ -991,7 +1025,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
 
                   {/* Resource 1 Slot */}
                   <div
-                    className={`p-2.5 rounded-xl border transition-all flex items-center justify-between min-h-[42px] ${
+                    className={`p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl border transition-all flex items-center justify-between min-h-[34px] sm:min-h-[42px] ${
                       trait1
                         ? 'bg-zinc-900/90 border-red-900/70 text-zinc-100 shadow-sm'
                         : 'bg-zinc-950/40 border-dashed border-red-700/60 text-red-300/90 animate-pulse'
@@ -999,20 +1033,20 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                   >
                     {trait1 ? (
                       <>
-                        <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                           <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-                          <span className="font-serif font-bold text-sm text-zinc-100 truncate">
+                          <span className="font-serif font-bold text-xs sm:text-sm text-zinc-100 truncate">
                             {trait1.name}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-red-950/80 border border-red-800/80 text-red-300 font-bold">
+                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                          <span className="font-mono text-[11px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-md bg-red-950/80 border border-red-800/80 text-red-300 font-bold">
                             {trait1.value} {formatDotsWord(trait1.value)}
                           </span>
                           <button
                             type="button"
                             onClick={() => handleRemoveTrait(1)}
-                            className="text-zinc-400 hover:text-red-400 p-1 rounded hover:bg-zinc-800/60 transition-colors cursor-pointer"
+                            className="text-zinc-400 hover:text-red-400 p-0.5 sm:p-1 rounded hover:bg-zinc-800/60 transition-colors cursor-pointer"
                             title="Удалить ресурс 1"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -1020,7 +1054,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                         </div>
                       </>
                     ) : (
-                      <span className="text-xs italic text-red-300/90 flex items-center gap-2 py-0.5">
+                      <span className="text-[11px] sm:text-xs italic text-red-300/90 flex items-center gap-1.5 sm:gap-2 py-0.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" />
                         Нажмите на навык или характеристику на листе
                       </span>
@@ -1029,14 +1063,14 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
 
                   {/* Bold Plus Sign */}
                   <div className="flex items-center justify-center -my-1 relative z-10">
-                    <div className="w-6 h-6 rounded-full bg-zinc-900 border border-red-800/80 flex items-center justify-center text-red-400 font-bold text-xs shadow-md">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-zinc-900 border border-red-800/80 flex items-center justify-center text-red-400 font-bold text-[10px] sm:text-xs shadow-md">
                       +
                     </div>
                   </div>
 
                   {/* Resource 2 Slot */}
                   <div
-                    className={`p-2.5 rounded-xl border transition-all flex items-center justify-between min-h-[42px] ${
+                    className={`p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl border transition-all flex items-center justify-between min-h-[34px] sm:min-h-[42px] ${
                       trait2
                         ? 'bg-zinc-900/90 border-red-900/70 text-zinc-100 shadow-sm'
                         : trait1
@@ -1046,20 +1080,20 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                   >
                     {trait2 ? (
                       <>
-                        <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                           <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-                          <span className="font-serif font-bold text-sm text-zinc-100 truncate">
+                          <span className="font-serif font-bold text-xs sm:text-sm text-zinc-100 truncate">
                             {trait2.name}
                           </span>
                         </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="font-mono text-xs px-2 py-0.5 rounded-md bg-red-950/80 border border-red-800/80 text-red-300 font-bold">
+                        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                          <span className="font-mono text-[11px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-md bg-red-950/80 border border-red-800/80 text-red-300 font-bold">
                             {trait2.value} {formatDotsWord(trait2.value)}
                           </span>
                           <button
                             type="button"
                             onClick={() => handleRemoveTrait(2)}
-                            className="text-zinc-400 hover:text-red-400 p-1 rounded hover:bg-zinc-800/60 transition-colors cursor-pointer"
+                            className="text-zinc-400 hover:text-red-400 p-0.5 sm:p-1 rounded hover:bg-zinc-800/60 transition-colors cursor-pointer"
                             title="Удалить ресурс 2"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -1067,7 +1101,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                         </div>
                       </>
                     ) : (
-                      <span className={`text-xs italic flex items-center gap-2 py-0.5 ${trait1 ? 'text-red-300/90' : 'text-zinc-500'}`}>
+                      <span className={`text-[11px] sm:text-xs italic flex items-center gap-1.5 sm:gap-2 py-0.5 ${trait1 ? 'text-red-300/90' : 'text-zinc-500'}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${trait1 ? 'bg-red-500 animate-ping' : 'bg-zinc-600'}`} />
                         {trait1 ? 'Нажмите на второй ресурс на листе...' : 'Ожидание первого ресурса'}
                       </span>
@@ -1076,9 +1110,9 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
 
                   {/* Calculated Pool Total Badge */}
                   {trait1 && trait2 && (
-                    <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-red-950/50 border border-red-900/60 text-xs animate-in fade-in">
+                    <div className="flex items-center justify-between px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-red-950/50 border border-red-900/60 text-[11px] sm:text-xs animate-in fade-in">
                       <span className="font-serif text-zinc-300">Расчетный пул:</span>
-                      <span className="font-mono font-bold text-amber-300 text-sm">
+                      <span className="font-mono font-bold text-amber-300 text-xs sm:text-sm">
                         {trait1.value} + {trait2.value} = {trait1.value + trait2.value} {formatDiceWord(trait1.value + trait2.value)}
                       </span>
                     </div>
@@ -1086,7 +1120,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                 </div>
               ) : (
                 /* Manual Pool Selection Mode */
-                <div className="space-y-2.5 bg-zinc-900/40 p-3 rounded-xl border border-zinc-800/80">
+                <div className="space-y-1.5 sm:space-y-2.5 bg-zinc-900/40 p-2 sm:p-3 rounded-xl border border-zinc-800/80">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex flex-col">
                       <span className="text-xs font-serif font-medium text-zinc-200">
@@ -1102,22 +1136,22 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                         type="button"
                         onClick={() => handleManualTotalChange(-1)}
                         disabled={manualTotalDice <= 1}
-                        className="w-7 h-7 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-zinc-800 text-zinc-200 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer disabled:cursor-not-allowed"
+                        className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-zinc-800 text-zinc-200 flex items-center justify-center font-bold text-xs sm:text-sm transition-colors cursor-pointer disabled:cursor-not-allowed"
                         title="Уменьшить на 1"
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
-                      <span className="w-8 text-center font-mono font-bold text-base text-zinc-100 select-none">
+                      <span className="w-7 sm:w-8 text-center font-mono font-bold text-sm sm:text-base text-zinc-100 select-none">
                         {manualTotalDice}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleManualTotalChange(1)}
                         disabled={manualTotalDice >= 30}
-                        className="w-7 h-7 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-zinc-800 text-zinc-200 flex items-center justify-center font-bold text-sm transition-colors cursor-pointer disabled:cursor-not-allowed"
+                        className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-zinc-800 hover:bg-zinc-700 disabled:opacity-30 disabled:hover:bg-zinc-800 text-zinc-200 flex items-center justify-center font-bold text-xs sm:text-sm transition-colors cursor-pointer disabled:cursor-not-allowed"
                         title="Увеличить на 1"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -1125,9 +1159,9 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
               )}
 
               {/* --- HUNGER SETTINGS SECTION --- */}
-              <div className="space-y-2 bg-zinc-900/40 p-3 rounded-xl border border-zinc-800/80">
+              <div className="space-y-1.5 sm:space-y-2 bg-zinc-900/40 p-2 sm:p-3 rounded-xl border border-zinc-800/80">
                 {/* Checkbox: "Использовать текущий голод" (по умолчанию включен) */}
-                <label className="flex items-center justify-between gap-2.5 cursor-pointer text-xs text-zinc-300 hover:text-white select-none">
+                <label className="flex items-center justify-between gap-2.5 cursor-pointer text-[11px] sm:text-xs text-zinc-300 hover:text-white select-none">
                   <span className="flex items-center gap-1.5 font-serif">
                     <span>Использовать текущий голод</span>
                     <span className="text-red-400 font-mono font-semibold">({sheetHunger} 🩸)</span>
@@ -1136,19 +1170,19 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                     type="checkbox"
                     checked={useCurrentHunger}
                     onChange={(e) => handleCheckboxChange(e.target.checked)}
-                    className="rounded text-red-600 focus:ring-red-500 w-4 h-4 accent-red-600 cursor-pointer"
+                    className="rounded text-red-600 focus:ring-red-500 w-3.5 h-3.5 sm:w-4 sm:h-4 accent-red-600 cursor-pointer"
                   />
                 </label>
 
                 {/* Counter 2: Hunger dice (hidden if checkbox is checked) */}
                 {!useCurrentHunger && (
-                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-zinc-800/60 animate-in fade-in duration-150">
+                  <div className="flex items-center justify-between gap-2 pt-1.5 sm:pt-2 border-t border-zinc-800/60 animate-in fade-in duration-150">
                     <div className="flex flex-col">
-                      <span className="text-xs font-serif font-medium text-red-400 flex items-center gap-1">
+                      <span className="text-[11px] sm:text-xs font-serif font-medium text-red-400 flex items-center gap-1">
                         <span>Кости голода:</span>
                         <span className="text-xs">🩸</span>
                       </span>
-                      <span className="text-[10px] text-zinc-500 font-sans">
+                      <span className="text-[9.5px] sm:text-[10px] text-zinc-500 font-sans">
                         (заменяют обычные кости)
                       </span>
                     </div>
@@ -1158,22 +1192,22 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                         type="button"
                         onClick={() => handleHungerChange(-1)}
                         disabled={manualHunger <= 0}
-                        className="w-7 h-7 rounded-lg bg-red-950/70 hover:bg-red-900 disabled:opacity-30 text-red-200 flex items-center justify-center font-bold text-sm border border-red-900/50 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                        className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-red-950/70 hover:bg-red-900 disabled:opacity-30 text-red-200 flex items-center justify-center font-bold text-xs sm:text-sm border border-red-900/50 transition-colors cursor-pointer disabled:cursor-not-allowed"
                         title="Уменьшить кости голода"
                       >
-                        <Minus className="w-3.5 h-3.5" />
+                        <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
-                      <span className="w-8 text-center font-mono font-bold text-base text-red-400 select-none">
+                      <span className="w-7 sm:w-8 text-center font-mono font-bold text-sm sm:text-base text-red-400 select-none">
                         {effectiveHunger}
                       </span>
                       <button
                         type="button"
                         onClick={() => handleHungerChange(1)}
                         disabled={manualHunger >= Math.min(totalDice, 5)}
-                        className="w-7 h-7 rounded-lg bg-red-950/70 hover:bg-red-900 disabled:opacity-30 text-red-200 flex items-center justify-center font-bold text-sm border border-red-900/50 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                        className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-red-950/70 hover:bg-red-900 disabled:opacity-30 text-red-200 flex items-center justify-center font-bold text-xs sm:text-sm border border-red-900/50 transition-colors cursor-pointer disabled:cursor-not-allowed"
                         title="Увеличить кости голода"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -1181,8 +1215,8 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
               </div>
 
               {/* --- DICE DISPLAY & RESULT AREA --- */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] text-zinc-400 px-1 font-sans">
+              <div className="space-y-1 sm:space-y-1.5">
+                <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-zinc-400 px-1 font-sans">
                   <span>
                     Обычные кости: <strong className="text-zinc-200">{regularDiceCount}</strong>
                   </span>
@@ -1193,9 +1227,9 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
 
                 {/* Helper hint for reroll when rolled */}
                 {rolledDice && rolledDice.length > 0 && (
-                  <div className="flex items-center justify-between text-[11px] font-sans px-2.5 py-1.5 rounded-lg bg-zinc-900/80 border border-zinc-800">
+                  <div className="flex items-center justify-between text-[10px] sm:text-[11px] font-sans px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg bg-zinc-900/80 border border-zinc-800">
                     <span className="text-zinc-300 flex items-center gap-1.5">
-                      <RotateCcw className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <RotateCcw className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-400 shrink-0" />
                       {selectedForReroll.length === 0 ? (
                         <span>Нажмите на кости (до 3), чтобы перебросить:</span>
                       ) : (
@@ -1208,7 +1242,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                       <button
                         type="button"
                         onClick={() => setSelectedForReroll([])}
-                        className="text-amber-400 hover:text-amber-200 text-[10.5px] font-medium underline cursor-pointer ml-2"
+                        className="text-amber-400 hover:text-amber-200 text-[10px] sm:text-[10.5px] font-medium underline cursor-pointer ml-2"
                       >
                         Сбросить
                       </button>
@@ -1217,11 +1251,11 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                 )}
 
                 {/* Dice container */}
-                <div className="p-3 bg-zinc-900/60 rounded-xl border border-zinc-800/80 min-h-[86px] flex flex-wrap gap-2.5 justify-center items-center">
+                <div className="p-2 sm:p-3 bg-zinc-900/60 rounded-xl border border-zinc-800/80 min-h-[58px] sm:min-h-[86px] flex flex-wrap gap-1.5 sm:gap-2.5 justify-center items-center">
                   {rollerMode === 'trait' && (!trait1 || !trait2) ? (
-                    <div className="py-3 px-2 text-center text-xs font-serif text-zinc-400 flex flex-col items-center gap-1.5">
-                      <Dices className="w-5 h-5 text-red-500/70 animate-bounce" />
-                      <span>
+                    <div className="py-2.5 sm:py-3 px-2 text-center text-xs font-serif text-zinc-400 flex flex-col items-center gap-1.5">
+                      <Dices className="w-4 h-4 sm:w-5 sm:h-5 text-red-500/70 animate-bounce" />
+                      <span className="text-[11px] sm:text-xs">
                         {!trait1
                           ? 'Нажмите на первый навык или характеристику на листе'
                           : 'Нажмите на второй ресурс на листе, чтобы сформировать пул'}
@@ -1253,7 +1287,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                               setSelectedForReroll((prev) => [...prev, idx]);
                             }
                           }}
-                          className={`flex flex-col items-center group relative animate-in zoom-in-90 duration-150 p-1 rounded-xl transition-all ${
+                          className={`flex flex-col items-center group relative animate-in zoom-in-90 duration-150 p-0.5 sm:p-1 rounded-xl transition-all ${
                             isSelected
                               ? 'bg-amber-500/20 ring-2 ring-amber-400 scale-105 shadow-md shadow-amber-950/60 cursor-pointer'
                               : isRolled && !isHunger
@@ -1275,20 +1309,20 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                           }
                         >
                           {isSelected && (
-                            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center font-mono font-bold text-[9px] shadow-sm z-10">
+                            <span className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-amber-500 text-zinc-950 flex items-center justify-center font-mono font-bold text-[8px] sm:text-[9px] shadow-sm z-10">
                               ✓
                             </span>
                           )}
                           <img
                             src={die.image}
                             alt={die.type}
-                            className={`w-9 h-9 sm:w-10 sm:h-10 object-contain drop-shadow-md select-none transition-transform group-hover:scale-105 ${
+                            className={`w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 object-contain drop-shadow-md select-none transition-transform group-hover:scale-105 ${
                               die.type === 'hunger' ? 'ring-1 ring-red-900/40 rounded-lg' : ''
                             }`}
                           />
                           {die.value !== undefined && (
                             <span
-                              className={`text-[10px] font-mono font-bold mt-0.5 leading-none ${
+                              className={`text-[9.5px] sm:text-[10px] font-mono font-bold mt-0.5 leading-none ${
                                 isSelected
                                   ? 'text-amber-400 font-extrabold'
                                   : die.type === 'hunger'
@@ -1319,7 +1353,7 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                 {resultMessage ? (
                   <div
                     id="vtm-dice-result-banner"
-                    className={`text-center py-2.5 px-3 rounded-xl font-serif font-bold text-sm tracking-wide border shadow-md transition-all animate-in fade-in duration-200 ${
+                    className={`text-center py-1.5 sm:py-2.5 px-2.5 sm:px-3 rounded-xl font-serif font-bold text-xs sm:text-sm tracking-wide border shadow-md transition-all animate-in fade-in duration-200 ${
                       messageType === 'clean_crit'
                         ? 'bg-amber-950/50 border-amber-500/70 text-amber-300 shadow-amber-950/40'
                         : messageType === 'messy_crit'
@@ -1333,17 +1367,17 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                         : 'bg-zinc-900/80 border-zinc-700 text-zinc-300'
                     }`}
                   >
-                    <div className="text-base font-extrabold tracking-wide">
+                    <div className="text-sm sm:text-base font-extrabold tracking-wide">
                       {resultMessage}
                     </div>
                     {resultDetails && (
-                      <div className="text-[11px] font-sans font-normal text-zinc-300/85 mt-0.5">
+                      <div className="text-[10px] sm:text-[11px] font-sans font-normal text-zinc-300/85 mt-0.5">
                         {resultDetails}
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="text-center py-2 px-3 rounded-xl border border-dashed border-zinc-800/80 text-zinc-500 text-xs font-sans">
+                  <div className="text-center py-1.5 sm:py-2 px-2.5 sm:px-3 rounded-xl border border-dashed border-zinc-800/80 text-zinc-500 text-[11px] sm:text-xs font-sans">
                     Результат броска (успехи) отобразится здесь
                   </div>
                 )}
@@ -1351,24 +1385,24 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
 
               {/* --- ROLL / REROLL BUTTON --- */}
               {selectedForReroll.length > 0 ? (
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 sm:gap-2 pt-0.5">
                   <button
                     type="button"
                     id="vtm-reroll-dice-btn"
                     onClick={handleRerollSelected}
-                    className="flex-1 py-2.5 font-serif font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 select-none bg-gradient-to-r from-amber-700 via-red-800 to-amber-900 hover:from-amber-600 hover:via-red-700 hover:to-amber-800 text-amber-100 shadow-lg border border-amber-500/70 active:scale-[0.98] cursor-pointer shadow-amber-950/60"
+                    className="flex-1 py-2 sm:py-2.5 font-serif font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 sm:gap-2 select-none bg-gradient-to-r from-amber-700 via-red-800 to-amber-900 hover:from-amber-600 hover:via-red-700 hover:to-amber-800 text-amber-100 shadow-lg border border-amber-500/70 active:scale-[0.98] cursor-pointer shadow-amber-950/60 text-xs sm:text-sm"
                     title="Перебросить выбранные кости за Силу Воли"
                   >
-                    <RotateCcw className="w-4 h-4 text-amber-300 shrink-0" />
+                    <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 shrink-0" />
                     <span>
-                      Перебросить выбранные кости ({selectedForReroll.length})
+                      Перебросить ({selectedForReroll.length})
                     </span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setSelectedForReroll([])}
-                    className="px-3 py-2.5 font-serif text-xs rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer shrink-0"
+                    className="px-2.5 sm:px-3 py-2 sm:py-2.5 font-serif text-xs rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-zinc-200 transition-colors cursor-pointer shrink-0"
                     title="Отменить выбор костей"
                   >
                     Отмена
@@ -1380,13 +1414,13 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
                   id="vtm-roll-dice-btn"
                   onClick={handleRoll}
                   disabled={isRollDisabled}
-                  className={`w-full py-2.5 font-serif font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 select-none ${
+                  className={`w-full py-2 sm:py-2.5 font-serif font-bold tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 sm:gap-2 select-none text-xs sm:text-sm ${
                     isRollDisabled
                       ? 'opacity-40 cursor-not-allowed bg-zinc-900 border border-zinc-800 text-zinc-500 shadow-none'
                       : 'bg-gradient-to-r from-red-900 via-red-800 to-red-950 hover:from-red-800 hover:to-red-900 text-white shadow-lg border border-red-700/60 active:scale-[0.98] cursor-pointer shadow-red-950/50'
                   }`}
                 >
-                  <Dices className="w-4 h-4" />
+                  <Dices className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>
                     {isRollDisabled
                       ? !trait1
@@ -1399,46 +1433,90 @@ export const FloatingDiceRoller: React.FC<FloatingDiceRollerProps> = ({
             </div>
           </div>
 
-          {/* Settings checkboxes strictly under the dice roller window */}
+          {/* Settings checkboxes strictly under the dice roller window (Collapsible) */}
           <div
             id="vtm-roller-settings-bottom-box"
-            className="w-full bg-zinc-950/95 backdrop-blur-md border border-red-900/60 rounded-xl px-3.5 py-2.5 shadow-2xl text-zinc-200 hover:border-red-700/80 transition-colors flex flex-col gap-2"
+            className="w-full bg-zinc-950/95 backdrop-blur-md border border-red-900/60 rounded-xl px-2.5 sm:px-3.5 py-1.5 sm:py-2 shadow-2xl text-zinc-200 hover:border-red-700/80 transition-all flex flex-col gap-1.5 shrink-0"
           >
-            <label className="flex items-center gap-2.5 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={autoHungerOnRouse}
-                onChange={(e) => setAutoHungerOnRouse(e.target.checked)}
-                className="w-4 h-4 rounded border-red-800 bg-zinc-900 text-red-600 focus:ring-red-500 focus:ring-offset-zinc-950 cursor-pointer shrink-0 accent-red-600"
-              />
-              <span className="font-serif text-[11.5px] leading-snug text-zinc-300">
-                Автоматическое увеличение Голода при неудачном Воззвании к Крови
-              </span>
-              <Droplet
-                className={`w-3.5 h-3.5 shrink-0 ml-auto transition-colors ${
-                  autoHungerOnRouse ? 'text-red-500 fill-current' : 'text-zinc-600'
-                }`}
-              />
-            </label>
+            {/* Collapsible toggle button / header */}
+            <button
+              type="button"
+              id="vtm-toggle-roller-settings-btn"
+              onClick={() => setIsSettingsOpen((prev) => !prev)}
+              className="w-full flex items-center justify-between gap-2 text-left cursor-pointer group py-0.5"
+              title={isSettingsOpen ? 'Свернуть панель автоматизации' : 'Развернуть панель автоматизации'}
+              aria-label={isSettingsOpen ? 'Свернуть панель автоматизации' : 'Развернуть панель автоматизации'}
+            >
+              <div className="flex items-center gap-1.5 min-w-0">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-red-400 shrink-0 group-hover:scale-110 transition-transform" />
+                <span className="font-serif text-[11px] sm:text-xs font-semibold text-zinc-300 group-hover:text-white truncate">
+                  Автоматизация бросков
+                </span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-zinc-900 border border-zinc-800 text-zinc-400 shrink-0">
+                  {Number(autoHungerOnRouse) + Number(fillWillpowerOnReroll)}/2
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-zinc-400 group-hover:text-zinc-200 shrink-0">
+                <span className="text-[10px] hidden xs:inline text-zinc-400">
+                  {isSettingsOpen ? 'Свернуть' : 'Настроить'}
+                </span>
+                {isSettingsOpen ? (
+                  <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+                ) : (
+                  <ChevronUp className="w-3.5 h-3.5 text-zinc-400" />
+                )}
+              </div>
+            </button>
 
-            <div className="h-px bg-zinc-800/80" />
+            {/* Checkboxes content when expanded */}
+            <AnimatePresence>
+              {isSettingsOpen && (
+                <motion.div
+                  key="roller-settings-content"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.15 }}
+                  className="overflow-hidden flex flex-col gap-2 pt-1.5 border-t border-zinc-800/80"
+                >
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={autoHungerOnRouse}
+                      onChange={(e) => setAutoHungerOnRouse(e.target.checked)}
+                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-red-800 bg-zinc-900 text-red-600 focus:ring-red-500 focus:ring-offset-zinc-950 cursor-pointer shrink-0 accent-red-600"
+                    />
+                    <span className="font-serif text-[10.5px] sm:text-[11.5px] leading-snug text-zinc-300">
+                      Автоматическое увеличение Голода при неудачном Воззвании к Крови
+                    </span>
+                    <Droplet
+                      className={`w-3.5 h-3.5 shrink-0 ml-auto transition-colors ${
+                        autoHungerOnRouse ? 'text-red-500 fill-current' : 'text-zinc-600'
+                      }`}
+                    />
+                  </label>
 
-            <label className="flex items-center gap-2.5 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={fillWillpowerOnReroll}
-                onChange={(e) => setFillWillpowerOnReroll(e.target.checked)}
-                className="w-4 h-4 rounded border-amber-800 bg-zinc-900 text-amber-500 focus:ring-amber-500 focus:ring-offset-zinc-950 cursor-pointer shrink-0 accent-amber-600"
-              />
-              <span className="font-serif text-[11.5px] leading-snug text-zinc-300">
-                Автоматическое заполнение воли при перебросе
-              </span>
-              <RotateCcw
-                className={`w-3.5 h-3.5 shrink-0 ml-auto transition-colors ${
-                  fillWillpowerOnReroll ? 'text-amber-400' : 'text-zinc-600'
-                }`}
-              />
-            </label>
+                  <div className="h-px bg-zinc-800/80" />
+
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={fillWillpowerOnReroll}
+                      onChange={(e) => setFillWillpowerOnReroll(e.target.checked)}
+                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-amber-800 bg-zinc-900 text-amber-500 focus:ring-amber-500 focus:ring-offset-zinc-950 cursor-pointer shrink-0 accent-amber-600"
+                    />
+                    <span className="font-serif text-[10.5px] sm:text-[11.5px] leading-snug text-zinc-300">
+                      Автоматическое заполнение воли при перебросе
+                    </span>
+                    <RotateCcw
+                      className={`w-3.5 h-3.5 shrink-0 ml-auto transition-colors ${
+                        fillWillpowerOnReroll ? 'text-amber-400' : 'text-zinc-600'
+                      }`}
+                    />
+                  </label>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

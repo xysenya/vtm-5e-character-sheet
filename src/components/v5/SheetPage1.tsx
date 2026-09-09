@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, ChevronDown, HelpCircle, Dices, X, Image, Sun, Moon } from 'lucide-react';
+import { Settings, ChevronDown, ChevronUp, HelpCircle, Dices, X, Image, Sun, Moon, SlidersHorizontal } from 'lucide-react';
 import { CharacterSheet, ClanId, TraitItem, V5SkillItem } from '../../types';
 import { SheetHeader, SectionDivider } from './SheetHeader';
 import { V5Dots, V5SquareTrack, V5HumanityTrack, V5HungerTrack } from './V5Controls';
@@ -84,6 +84,9 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
   const [showSkillsHelp, setShowSkillsHelp] = useState(false);
   const [isRandomAttrModalOpen, setIsRandomAttrModalOpen] = useState(false);
   const [isRandomSkillsModalOpen, setIsRandomSkillsModalOpen] = useState(false);
+
+  // State for collapsible side tools panel (accessible on vertical tablets, mobile and desktop)
+  const [isSideToolsOpen, setIsSideToolsOpen] = useState(false);
 
   const handlePowerLineClick = (dIndex: number, pIndex: number) => {
     const disc = disciplines[dIndex];
@@ -585,6 +588,33 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
 
   return (
     <>
+      {/* Кнопка над первым листом для сворачивания/разворачивания боковых инструментов (только для планшетов и мобильных устройств, скрыта на десктопе) */}
+      <div className="w-full max-w-[210mm] mx-auto mb-2 px-1 flex items-center justify-between no-print print:hidden xl:hidden">
+        <button
+          type="button"
+          id="btn-toggle-sheet1-side-tools"
+          onClick={() => setIsSideToolsOpen((prev) => !prev)}
+          className={`xl:hidden px-3 py-1.5 rounded-lg border shadow-sm cursor-pointer transition-all flex items-center gap-2 font-serif text-xs group ${
+            isSideToolsOpen
+              ? 'bg-red-950/80 border-red-700 text-white shadow-red-950/40'
+              : isDark
+              ? 'bg-[#141418] border-zinc-750 text-zinc-200 hover:bg-zinc-800 hover:text-white'
+              : 'bg-white border-zinc-300 text-zinc-800 hover:bg-zinc-50'
+          }`}
+          title={isSideToolsOpen ? 'Свернуть боковые инструменты' : 'Развернуть боковые инструменты (тема, шапка, рандомизатор)'}
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5 text-red-500 shrink-0 group-hover:scale-110 transition-transform" />
+          <span className="font-sans font-medium text-[11.5px] sm:text-xs">
+            {isSideToolsOpen ? 'Свернуть боковые инструменты' : 'Боковые инструменты листа (тема, шапка, рандомизатор)'}
+          </span>
+          {isSideToolsOpen ? (
+            <ChevronUp className="w-3.5 h-3.5 text-zinc-400 shrink-0 group-hover:-translate-y-0.5 transition-transform" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5 text-zinc-400 shrink-0 group-hover:translate-y-0.5 transition-transform" />
+          )}
+        </button>
+      </div>
+
       <div
         className={`relative w-full max-w-[210mm] min-h-[297mm] mx-auto p-4 sm:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-1 print:p-0 print:m-0 print:max-w-full print:w-full print:min-h-0 print:h-auto print:overflow-visible flex flex-col justify-start ${
           isDark ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800' : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
@@ -595,9 +625,195 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
           : '0 10px 30px -5px rgba(0, 0, 0, 0.15)',
       }}
     >
-      {/* Toggle Sheet Theme button (positioned to the left of the toggle logo button) */}
+      {/* Floating Side Tools Menu (Over sheet, only on screens < xl where side buttons are hidden) */}
+      {isSideToolsOpen && (
+        <aside
+          id="vtm-sheet1-side-tools-overlay"
+          className={`no-print xl:hidden absolute top-3 left-3 sm:top-4 sm:left-4 z-30 w-72 sm:w-80 max-w-[calc(100%-24px)] rounded-xl border p-3.5 shadow-2xl transition-all flex flex-col gap-3 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200 ${
+            isDark
+              ? 'bg-[#121215]/95 border-zinc-750 text-zinc-200 shadow-black/95 ring-1 ring-white/10'
+              : 'bg-white/95 border-zinc-300 text-zinc-900 shadow-xl shadow-zinc-400/30 ring-1 ring-zinc-200'
+          }`}
+        >
+          {/* Header */}
+          <div className={`flex items-center justify-between pb-2 border-b ${isDark ? 'border-zinc-750' : 'border-zinc-200'}`}>
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-red-500 shrink-0" />
+              <h4 className={`font-serif font-bold text-xs sm:text-sm tracking-tight ${isDark ? 'text-white' : 'text-zinc-900'}`}>
+                Инструменты листа
+              </h4>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsSideToolsOpen(false)}
+              className={`px-2 py-0.5 rounded text-xs font-serif font-medium cursor-pointer transition-all flex items-center gap-1 border ${
+                isDark
+                  ? 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border-zinc-700 hover:text-white'
+                  : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-300 hover:text-black'
+              }`}
+              title="Свернуть меню"
+            >
+              <X className="w-3.5 h-3.5 text-red-500" />
+              <span className="text-[11px]">Свернуть</span>
+            </button>
+          </div>
+
+          {/* Section 1: Appearance & Header */}
+          <div className="flex flex-col gap-2">
+            <span className={`text-[10px] font-sans font-bold uppercase tracking-wider ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+              Оформление и шапка
+            </span>
+
+            {/* Theme toggle */}
+            {onToggleTheme && (
+              <button
+                type="button"
+                onClick={onToggleTheme}
+                className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-serif flex items-center justify-between transition-all cursor-pointer ${
+                  isDark
+                    ? 'bg-zinc-900/80 hover:bg-zinc-800 border-zinc-700 text-zinc-200'
+                    : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-800'
+                }`}
+              >
+                <span className="flex items-center gap-2">
+                  {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+                  <span>Тема листа:</span>
+                </span>
+                <span className={`font-sans text-[11px] font-semibold px-2 py-0.5 rounded border ${
+                  isDark ? 'bg-zinc-800 border-zinc-700 text-amber-400' : 'bg-white border-zinc-300 text-indigo-600'
+                }`}>
+                  {isDark ? 'Тёмная' : 'Светлая'}
+                </span>
+              </button>
+            )}
+
+            {/* Graphic Logo toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                onChange({
+                  ...sheet,
+                  v5UseGraphicLogo: !sheet.v5UseGraphicLogo,
+                  updatedAt: new Date().toISOString(),
+                });
+              }}
+              className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-serif flex items-center justify-between transition-all cursor-pointer ${
+                isDark
+                  ? 'bg-zinc-900/80 hover:bg-zinc-800 border-zinc-700 text-zinc-200'
+                  : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-800'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <Image className="w-4 h-4 text-red-500" />
+                <span>Логотип:</span>
+              </span>
+              <span className={`font-sans text-[11px] font-semibold px-2 py-0.5 rounded border ${
+                sheet.v5UseGraphicLogo
+                  ? 'bg-red-950/60 border-red-800 text-red-300'
+                  : isDark ? 'bg-zinc-800 border-zinc-700 text-zinc-300' : 'bg-white border-zinc-300 text-zinc-700'
+              }`}>
+                {sheet.v5UseGraphicLogo ? 'Графика (SVG)' : 'Текстовый'}
+              </span>
+            </button>
+
+            {/* Header 3x3 slots customize */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsSideToolsOpen(false);
+                setIsHeaderSettingsOpen(true);
+              }}
+              className={`w-full px-2.5 py-1.5 rounded-lg border text-xs font-serif flex items-center justify-between transition-all cursor-pointer ${
+                isDark
+                  ? 'bg-zinc-900/80 hover:bg-zinc-800 border-zinc-700 text-zinc-200'
+                  : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-800'
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <Settings className="w-4 h-4 text-zinc-400" />
+                <span>Настройка полей шапки (3x3)</span>
+              </span>
+              <span className="text-zinc-400 text-xs">→</span>
+            </button>
+          </div>
+
+          {/* Section 2: Attributes */}
+          <div className="flex flex-col gap-2 pt-2 border-t border-red-900/20">
+            <span className={`text-[10px] font-sans font-bold uppercase tracking-wider ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+              Характеристики
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSideToolsOpen(false);
+                  setIsRandomAttrModalOpen(true);
+                }}
+                className={`px-2.5 py-1.5 rounded-lg border text-xs font-serif flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  isDark ? 'bg-zinc-900/80 hover:bg-zinc-800 border-zinc-700 text-zinc-200' : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-800'
+                }`}
+                title="Случайно распределить характеристики"
+              >
+                <Dices className="w-4 h-4 text-red-500" />
+                <span>Рандомизатор</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAttrHelp((prev) => !prev)}
+                className={`px-2.5 py-1.5 rounded-lg border text-xs font-serif flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  showAttrHelp
+                    ? 'bg-red-900 text-white border-red-500'
+                    : isDark ? 'bg-zinc-900/80 hover:bg-zinc-800 border-zinc-700 text-zinc-200' : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-800'
+                }`}
+                title="Правила характеристик"
+              >
+                <HelpCircle className="w-4 h-4 text-amber-500" />
+                <span>Правила (?)</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Section 3: Skills */}
+          <div className="flex flex-col gap-2 pt-2 border-t border-red-900/20">
+            <span className={`text-[10px] font-sans font-bold uppercase tracking-wider ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+              Навыки
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSideToolsOpen(false);
+                  setIsRandomSkillsModalOpen(true);
+                }}
+                className={`px-2.5 py-1.5 rounded-lg border text-xs font-serif flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  isDark ? 'bg-zinc-900/80 hover:bg-zinc-800 border-zinc-700 text-zinc-200' : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-800'
+                }`}
+                title="Случайно распределить навыки"
+              >
+                <Dices className="w-4 h-4 text-red-500" />
+                <span>Рандомизатор</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSkillsHelp((prev) => !prev)}
+                className={`px-2.5 py-1.5 rounded-lg border text-xs font-serif flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  showSkillsHelp
+                    ? 'bg-red-900 text-white border-red-500'
+                    : isDark ? 'bg-zinc-900/80 hover:bg-zinc-800 border-zinc-700 text-zinc-200' : 'bg-zinc-50 hover:bg-zinc-100 border-zinc-200 text-zinc-800'
+                }`}
+                title="Правила навыков"
+              >
+                <HelpCircle className="w-4 h-4 text-amber-500" />
+                <span>Правила (?)</span>
+              </button>
+            </div>
+          </div>
+        </aside>
+      )}
+
+      {/* Toggle Sheet Theme button (positioned to the left on wide screens) */}
       {onToggleTheme && (
-        <div className="absolute -left-12 sm:-left-22 lg:-left-24 top-[20px] sm:top-[24px] print:hidden z-20">
+        <div className="hidden xl:block absolute -left-12 sm:-left-22 lg:-left-24 top-[20px] sm:top-[24px] print:hidden z-20">
           <button
             type="button"
             id="vtm-toggle-sheet-theme-trigger"
@@ -624,7 +840,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
       )}
 
       {/* Toggle Logo button (positioned to the left of the sheet opposite the "Вампиры Маскарад" title, aligned with header settings button) */}
-      <div className="absolute -left-3.5 sm:-left-12 lg:-left-13 top-[20px] sm:top-[24px] print:hidden z-20">
+      <div className="hidden xl:block absolute -left-3.5 sm:-left-12 lg:-left-13 top-[20px] sm:top-[24px] print:hidden z-20">
         <button
           type="button"
           id="vtm-toggle-logo-trigger"
@@ -654,7 +870,7 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
       </div>
 
       {/* Settings gear button to customize header slots (positioned to the left of the sheet at the level of the name input block) */}
-      <div className="absolute -left-3.5 sm:-left-12 lg:-left-13 top-[80px] sm:top-[88px] print:hidden z-20">
+      <div className="hidden xl:block absolute -left-3.5 sm:-left-12 lg:-left-13 top-[80px] sm:top-[88px] print:hidden z-20">
         <button
           type="button"
           id="vtm-header-settings-trigger"
@@ -737,8 +953,8 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
 
       {/* ATTRIBUTES SECTION (3 COLUMNS) */}
       <div className="relative">
-        {/* Left side action buttons for Attributes */}
-        <div className="absolute -left-[30px] sm:-left-[72px] lg:-left-[76px] top-0 print:hidden z-20 flex flex-col gap-1.5 sm:gap-2">
+        {/* Left side action buttons for Attributes (visible on wide screens >= xl) */}
+        <div className="hidden xl:flex absolute -left-[30px] sm:-left-[72px] lg:-left-[76px] top-0 print:hidden z-20 flex-col gap-1.5 sm:gap-2">
           {/* Upper button: Rules (?) */}
           <button
             type="button"
@@ -772,46 +988,46 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
           >
             <Dices className="w-4 h-4 sm:w-4.5 sm:h-4.5 transition-transform duration-200 group-hover:rotate-12" />
           </button>
-
-          {/* Persistent popup message for Attributes rules */}
-          {showAttrHelp && (
-            <div
-              id="vtm-attr-rules-popup"
-              className={`absolute right-full mr-2.5 sm:mr-3 top-0 z-30 w-72 sm:w-80 p-3.5 rounded-lg border shadow-2xl backdrop-blur-sm text-xs font-serif leading-relaxed animate-in fade-in duration-200 ${
-                isDark
-                  ? 'bg-zinc-950/95 text-zinc-200 border-red-900/80 shadow-black/90'
-                  : 'bg-white text-black border-zinc-400 shadow-xl shadow-zinc-500/30'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-2 pb-1.5 mb-1.5 border-b border-red-900/40">
-                <div className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] font-sans ${
-                  isDark ? 'text-red-500' : 'text-red-700'
-                }`}>
-                  <HelpCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Правила: Характеристики</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowAttrHelp(false)}
-                  className={`transition-colors p-0.5 ${
-                    isDark ? 'text-zinc-400 hover:text-red-400' : 'text-zinc-500 hover:text-black'
-                  }`}
-                  title="Закрыть"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              <p className={`whitespace-pre-line font-serif ${isDark ? 'text-zinc-200' : 'text-black font-medium'}`}>
-                Стартовое распределение очков: одна Характеристика - 4 точки; Три характеристики - по 3 точки; Четыре характеристики - по 2 точки; Одна характеристика - 1 точка.
-              </p>
-              <div className={`mt-2 pt-1.5 border-t text-[10px] font-sans italic ${
-                isDark ? 'border-zinc-800/60 text-zinc-400' : 'border-zinc-200 text-zinc-700'
-              }`}>
-                Нажмите кнопку «?» повторно, чтобы скрыть подсказку.
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Persistent popup message for Attributes rules (positioned over sheet to avoid going off-screen) */}
+        {showAttrHelp && (
+          <div
+            id="vtm-attr-rules-popup"
+            className={`no-print absolute left-0 sm:left-2 top-8 z-30 w-72 sm:w-80 p-3.5 rounded-lg border shadow-2xl backdrop-blur-md text-xs font-serif leading-relaxed animate-in fade-in duration-200 ${
+              isDark
+                ? 'bg-zinc-950/95 text-zinc-200 border-red-900/80 shadow-black/90'
+                : 'bg-white text-black border-zinc-400 shadow-xl shadow-zinc-500/30'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-2 pb-1.5 mb-1.5 border-b border-red-900/40">
+              <div className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] font-sans ${
+                isDark ? 'text-red-500' : 'text-red-700'
+              }`}>
+                <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>Правила: Характеристики</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAttrHelp(false)}
+                className={`transition-colors p-0.5 ${
+                  isDark ? 'text-zinc-400 hover:text-red-400' : 'text-zinc-500 hover:text-black'
+                }`}
+                title="Закрыть"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <p className={`whitespace-pre-line font-serif ${isDark ? 'text-zinc-200' : 'text-black font-medium'}`}>
+              Стартовое распределение очков: одна Характеристика - 4 точки; Три характеристики - по 3 точки; Четыре характеристики - по 2 точки; Одна характеристика - 1 точка.
+            </p>
+            <div className={`mt-2 pt-1.5 border-t text-[10px] font-sans italic ${
+              isDark ? 'border-zinc-800/60 text-zinc-400' : 'border-zinc-200 text-zinc-700'
+            }`}>
+              Нажмите кнопку «?» повторно, чтобы скрыть подсказку.
+            </div>
+          </div>
+        )}
 
         <SectionDivider title="Характеристики" isDark={isDark} />
         <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-3 print:gap-3 my-2 print:my-1.5 print-calib-grid-gap text-xs">
@@ -929,8 +1145,8 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
 
       {/* SKILLS SECTION (3 COLUMNS OF 9 SKILLS EACH) */}
       <div className="relative">
-        {/* Left side action buttons for Skills */}
-        <div className="absolute -left-[30px] sm:-left-[72px] lg:-left-[76px] top-0 print:hidden z-20 flex flex-col gap-1.5 sm:gap-2">
+        {/* Left side action buttons for Skills (visible on wide screens >= xl) */}
+        <div className="hidden xl:flex absolute -left-[30px] sm:-left-[72px] lg:-left-[76px] top-0 print:hidden z-20 flex-col gap-1.5 sm:gap-2">
           {/* Upper button: Rules (?) */}
           <button
             type="button"
@@ -964,51 +1180,51 @@ export const SheetPage1: React.FC<SheetPage1Props> = ({
           >
             <Dices className="w-4 h-4 sm:w-4.5 sm:h-4.5 transition-transform duration-200 group-hover:rotate-12" />
           </button>
-
-          {/* Persistent popup message for Skills rules */}
-          {showSkillsHelp && (
-            <div
-              id="vtm-skills-rules-popup"
-              className={`absolute right-full mr-2.5 sm:mr-3 top-0 z-30 w-72 sm:w-84 p-3.5 rounded-lg border shadow-2xl backdrop-blur-sm text-xs font-serif leading-relaxed animate-in fade-in duration-200 ${
-                isDark
-                  ? 'bg-zinc-950/95 text-zinc-200 border-red-900/80 shadow-black/90'
-                  : 'bg-white text-black border-zinc-400 shadow-xl shadow-zinc-500/30'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-2 pb-1.5 mb-1.5 border-b border-red-900/40">
-                <div className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] font-sans ${
-                  isDark ? 'text-red-500' : 'text-red-700'
-                }`}>
-                  <HelpCircle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Правила: Навыки</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowSkillsHelp(false)}
-                  className={`transition-colors p-0.5 ${
-                    isDark ? 'text-zinc-400 hover:text-red-400' : 'text-zinc-500 hover:text-black'
-                  }`}
-                  title="Закрыть"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              <p className={`font-semibold mb-1.5 ${isDark ? 'text-zinc-100' : 'text-black'}`}>
-                Выберите один из шаблонов распределения точек:
-              </p>
-              <div className={`space-y-1 ${isDark ? 'text-zinc-300' : 'text-black font-medium'}`}>
-                <div>1. Мастер на все руки: 1x3, 8x2, 10x1;</div>
-                <div>2. Гармоничное развитие: 3x3, 5x2, 7x1;</div>
-                <div>3. Узкий специалист: 1x4, 3x3, 3x2, 3x1.</div>
-              </div>
-              <div className={`mt-2 pt-1.5 border-t text-[10px] font-sans italic ${
-                isDark ? 'border-zinc-800/60 text-zinc-400' : 'border-zinc-200 text-zinc-700'
-              }`}>
-                Нажмите кнопку «?» повторно, чтобы скрыть подсказку.
-              </div>
-            </div>
-          )}
         </div>
+
+        {/* Persistent popup message for Skills rules (positioned over sheet to avoid going off-screen) */}
+        {showSkillsHelp && (
+          <div
+            id="vtm-skills-rules-popup"
+            className={`no-print absolute left-0 sm:left-2 top-8 z-30 w-72 sm:w-84 p-3.5 rounded-lg border shadow-2xl backdrop-blur-md text-xs font-serif leading-relaxed animate-in fade-in duration-200 ${
+              isDark
+                ? 'bg-zinc-950/95 text-zinc-200 border-red-900/80 shadow-black/90'
+                : 'bg-white text-black border-zinc-400 shadow-xl shadow-zinc-500/30'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-2 pb-1.5 mb-1.5 border-b border-red-900/40">
+              <div className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] font-sans ${
+                isDark ? 'text-red-500' : 'text-red-700'
+              }`}>
+                <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>Правила: Навыки</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSkillsHelp(false)}
+                className={`transition-colors p-0.5 ${
+                  isDark ? 'text-zinc-400 hover:text-red-400' : 'text-zinc-500 hover:text-black'
+                }`}
+                title="Закрыть"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <p className={`font-semibold mb-1.5 ${isDark ? 'text-zinc-100' : 'text-black'}`}>
+              Выберите один из шаблонов распределения точек:
+            </p>
+            <div className={`space-y-1 ${isDark ? 'text-zinc-300' : 'text-black font-medium'}`}>
+              <div>1. Мастер на все руки: 1x3, 8x2, 10x1;</div>
+              <div>2. Гармоничное развитие: 3x3, 5x2, 7x1;</div>
+              <div>3. Узкий специалист: 1x4, 3x3, 3x2, 3x1.</div>
+            </div>
+            <div className={`mt-2 pt-1.5 border-t text-[10px] font-sans italic ${
+              isDark ? 'border-zinc-800/60 text-zinc-400' : 'border-zinc-200 text-zinc-700'
+            }`}>
+              Нажмите кнопку «?» повторно, чтобы скрыть подсказку.
+            </div>
+          </div>
+        )}
 
         <SectionDivider title="Навыки" isDark={isDark} />
         <div className="grid grid-cols-1 sm:grid-cols-3 print:grid-cols-3 gap-3 print:gap-3 my-2 print:my-1.5 print-calib-grid-gap text-xs print:text-[11px]">

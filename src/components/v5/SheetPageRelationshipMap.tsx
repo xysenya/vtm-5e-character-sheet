@@ -42,6 +42,9 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  Network,
 } from 'lucide-react';
 
 interface SheetPageRelationshipMapProps {
@@ -237,6 +240,73 @@ const CARD_HEIGHT = DEFAULT_CARD_HEIGHT;
 const CANVAS_VIRTUAL_WIDTH = 900;
 const CANVAS_VIRTUAL_HEIGHT = 1100;
 
+// Helper to parse hex colors into RGB
+function parseHexColor(hex: string): { r: number; g: number; b: number } {
+  let clean = hex.replace('#', '').trim();
+  if (clean.length === 3) {
+    clean = clean.split('').map((c) => c + c).join('');
+  }
+  if (clean.length >= 6) {
+    return {
+      r: parseInt(clean.substring(0, 2), 16) || 0,
+      g: parseInt(clean.substring(2, 4), 16) || 0,
+      b: parseInt(clean.substring(4, 6), 16) || 0,
+    };
+  }
+  return { r: 120, g: 120, b: 120 };
+}
+
+// Calculate perceived brightness / luminance
+function getPerceivedBrightness(r: number, g: number, b: number): number {
+  return (r * 299 + g * 587 + b * 114) / 1000;
+}
+
+// Compute dynamic contrasting styles for badges on cards (prevents dark-on-dark and light-on-light)
+function getBadgeContrastStyle(
+  baseColorHex: string,
+  isDark: boolean
+): { backgroundColor: string; borderColor: string; color: string } {
+  const { r, g, b } = parseHexColor(baseColorHex);
+
+  if (isDark) {
+    // Dark theme: card surface is dark (#18181c)
+    // Badge background is semi-transparent tint of base color
+    // Text MUST be light to contrast with the dark background
+    // Blend base color toward white (78%) for a crisp pastel tint with guaranteed high luminance (>200)
+    const textR = Math.min(255, Math.round(r + (255 - r) * 0.78));
+    const textG = Math.min(255, Math.round(g + (255 - g) * 0.78));
+    const textB = Math.min(255, Math.round(b + (255 - b) * 0.78));
+
+    return {
+      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.25)`,
+      borderColor: `rgba(${r}, ${g}, ${b}, 0.7)`,
+      color: `rgb(${textR}, ${textG}, ${textB})`,
+    };
+  } else {
+    // Light theme: card surface is white (#ffffff)
+    // Badge background is a soft pastel tint
+    // Text MUST be dark and legible against the light badge background
+    const baseLum = getPerceivedBrightness(r, g, b);
+
+    // If color is too bright, scale it down to deep readable luminance (<= 65)
+    let textR = r;
+    let textG = g;
+    let textB = b;
+    if (baseLum > 65) {
+      const factor = 65 / Math.max(baseLum, 1);
+      textR = Math.round(r * factor);
+      textG = Math.round(g * factor);
+      textB = Math.round(b * factor);
+    }
+
+    return {
+      backgroundColor: `rgba(${r}, ${g}, ${b}, 0.12)`,
+      borderColor: `rgba(${r}, ${g}, ${b}, 0.5)`,
+      color: `rgb(${textR}, ${textG}, ${textB})`,
+    };
+  }
+}
+
 // Helper to determine accurate card height taking actual DOM height into account
 function getActualCardHeight(card: RelationshipCard, heightsMap?: Record<string, number>): number {
   if (heightsMap && heightsMap[card.id] && heightsMap[card.id] > 20) {
@@ -246,6 +316,112 @@ function getActualCardHeight(card: RelationshipCard, heightsMap?: Record<string,
     return card.height;
   }
   return card.notes ? 88 : 56;
+}
+
+// Helper to find a free nearby position on the canvas for a new card close to the last created card
+function findNearbyEmptyPosition(
+  cards: RelationshipCard[],
+  preferredRefCard?: RelationshipCard,
+  heightsMap?: Record<string, number>
+): { x: number; y: number } {
+  const cardW = CARD_WIDTH; // 190
+  const cardH = DEFAULT_CARD_HEIGHT; // 64
+
+  // Default canvas padding and bounds
+  const minX = 40;
+  const maxX = CANVAS_VIRTUAL_WIDTH - cardW - 40; // 900 - 190 - 40 = 670
+  const minY = 40;
+  const maxY = CANVAS_VIRTUAL_HEIGHT - cardH - 60; // 1100 - 64 - 60 = 976
+
+  if (cards.length === 0) {
+    return { x: 240, y: 180 };
+  }
+
+  // Reference card: preferred card, or the last created card in the array
+  const ref = preferredRefCard || cards[cards.length - 1];
+  const refW = ref.width || cardW;
+  const refH = getActualCardHeight(ref, heightsMap);
+
+  const gapX = 36;
+  const gapY = 32;
+
+  // Collision check against all existing cards with safe margin
+  const isColliding = (candX: number, candY: number): boolean => {
+    // Canvas boundary check
+    if (candX < minX || candX > maxX || candY < minY || candY > maxY) {
+      return true;
+    }
+    for (const c of cards) {
+      const cw = c.width || cardW;
+      const ch = getActualCardHeight(c, heightsMap);
+      const margin = 18;
+      const overlap = !(
+        candX + cardW + margin <= c.x ||
+        candX >= c.x + cw + margin ||
+        candY + cardH + margin <= c.y ||
+        candY >= c.y + ch + margin
+      );
+      if (overlap) return true;
+    }
+    return false;
+  };
+
+  // Generate candidate positions around the reference card:
+  // Priority: Right, Down, Down-Right, Left, Up, Down-Left, Up-Right, Up-Left, then expand outward
+  const stepX = refW + gapX;
+  const stepY = refH + gapY;
+
+  const candidateOffsets: [number, number][] = [
+    // Ring 1 (immediate neighbors)
+    [stepX, 0], // Right
+    [0, stepY], // Down
+    [stepX, stepY], // Down-Right
+    [-stepX, 0], // Left
+    [0, -stepY], // Up
+    [-stepX, stepY], // Down-Left
+    [stepX, -stepY], // Up-Right
+    [-stepX, -stepY], // Up-Left
+
+    // Ring 2 (two steps away)
+    [stepX * 2, 0],
+    [0, stepY * 2],
+    [stepX * 2, stepY],
+    [stepX, stepY * 2],
+    [-stepX * 2, 0],
+    [0, -stepY * 2],
+    [stepX * 2, stepY * 2],
+
+    // Ring 3 (three steps away)
+    [stepX * 3, 0],
+    [0, stepY * 3],
+    [stepX * 3, stepY],
+    [stepX, stepY * 3],
+  ];
+
+  for (const [dx, dy] of candidateOffsets) {
+    const candX = Math.round(ref.x + dx);
+    const candY = Math.round(ref.y + dy);
+    if (!isColliding(candX, candY)) {
+      return { x: candX, y: candY };
+    }
+  }
+
+  // Fallback if area is dense: scan available grid slots
+  for (let r = 1; r <= 8; r++) {
+    for (let c = 0; c <= 4; c++) {
+      const candX = Math.round(minX + c * (cardW + gapX));
+      const candY = Math.round(minY + r * (cardH + gapY));
+      if (!isColliding(candX, candY)) {
+        return { x: candX, y: candY };
+      }
+    }
+  }
+
+  // Absolute fallback near reference
+  return {
+    x: Math.min(maxX, Math.max(minX, ref.x + 30)),
+    y: Math.min(maxY, Math.max(minY, ref.y + 30)),
+  };
 }
 
 // Helper to calculate exact coordinates of edge centers
@@ -434,8 +610,26 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
   const [zoom, setZoom] = useState<number>(1);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // Sidebar visibility (collapsible on small screens)
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  // Sidebar visibility (collapsible on tablet/desktop)
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('vtm_map_sidebar_open');
+      if (saved !== null) return saved === 'true';
+      return true;
+    } catch {
+      return true;
+    }
+  });
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('vtm_map_sidebar_open', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // Dragging a card
   const [draggingCard, setDraggingCard] = useState<{
@@ -498,29 +692,33 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
   const duplicateCard = (cardId: string) => {
     const orig = cardMap.get(cardId);
     if (!orig) return;
+    const pos = findNearbyEmptyPosition(mapData.cards, orig, cardHeights);
     const newCard: RelationshipCard = {
       ...orig,
       id: `card-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       name: `${orig.name} (копия)`,
-      x: orig.x + 30,
-      y: orig.y + 30,
+      x: pos.x,
+      y: pos.y,
     };
     updateMapData([...mapData.cards, newCard], mapData.connections);
     setSelectedCardId(newCard.id);
     setSelectedConnectionId(null);
   };
 
-  // Add new card
+  // Add new card near the last created card on empty space
   const handleAddNewCard = (type: RelationshipCardType = 'npc') => {
-    const offset = (mapData.cards.length % 5) * 28;
+    // If a card is currently selected, use it as priority reference, otherwise use last card
+    const refCard = selectedCardId ? cardMap.get(selectedCardId) : undefined;
+    const pos = findNearbyEmptyPosition(mapData.cards, refCard, cardHeights);
+
     const newCard: RelationshipCard = {
       id: `card-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       name: type === 'location' ? 'Новое убежище' : type === 'faction' ? 'Новая котерия' : type === 'player' ? 'Игрок' : 'Новый персонаж',
       type,
       clan: type === 'location' || type === 'faction' || type === 'player' ? undefined : 'ventrue',
       notes: '',
-      x: 180 + offset,
-      y: 160 + offset,
+      x: pos.x,
+      y: pos.y,
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
     };
@@ -531,6 +729,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
 
   // Add player character
   const handleAddMyCharacter = () => {
+    const pos = findNearbyEmptyPosition(mapData.cards, undefined, cardHeights);
     const defaultCard: RelationshipCard = {
       id: 'char-main-' + Date.now(),
       name: sheet.info?.name || 'Мой персонаж',
@@ -539,8 +738,8 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
       customClanName: sheet.info?.customClanName,
       imageUrl: sheet.v5Bio?.portraitUrl || '',
       notes: `${sheet.info?.concept || 'Амплуа не указано'}, ${sheet.info?.generation || 13}-е поколение`,
-      x: 220,
-      y: 180,
+      x: mapData.cards.length === 0 ? 220 : pos.x,
+      y: mapData.cards.length === 0 ? 180 : pos.y,
       width: CARD_WIDTH,
       height: CARD_HEIGHT,
     };
@@ -690,13 +889,91 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
     };
   };
 
+  // Global pointer listeners during connection drag so arrow line and target drop work reliably across the entire window
+  useEffect(() => {
+    if (!connectingState) return;
+
+    const handleGlobalPointerMove = (e: PointerEvent) => {
+      const coords = clientToCanvasCoords(e.clientX, e.clientY);
+      setConnectingState((prev) => (prev ? { ...prev, currentX: coords.x, currentY: coords.y } : null));
+    };
+
+    const handleGlobalPointerUp = (e: PointerEvent) => {
+      const coords = clientToCanvasCoords(e.clientX, e.clientY);
+
+      // 1. Direct DOM check for target card element under cursor
+      const hitEl = document.elementFromPoint(e.clientX, e.clientY);
+      const cardEl = hitEl?.closest('[data-card-id]');
+      const domCardId = cardEl?.getAttribute('data-card-id');
+
+      let targetCard: RelationshipCard | undefined;
+      if (domCardId && domCardId !== connectingState.fromCardId) {
+        targetCard = cardMap.get(domCardId);
+      }
+
+      // 2. Coordinate bounding-box check fallback with generous 24px tolerance
+      if (!targetCard) {
+        targetCard = mapData.cards.find((c) => {
+          if (c.id === connectingState.fromCardId) return false;
+          const w = c.width || CARD_WIDTH;
+          const h = getActualCardHeight(c, cardHeights);
+          return (
+            coords.x >= c.x - 24 &&
+            coords.x <= c.x + w + 24 &&
+            coords.y >= c.y - 24 &&
+            coords.y <= c.y + h + 24
+          );
+        });
+      }
+
+      if (targetCard) {
+        const fromCard = cardMap.get(connectingState.fromCardId);
+        if (fromCard) {
+          const { toSide } = getBestSides(
+            fromCard,
+            targetCard,
+            connectingState.fromSide,
+            undefined,
+            cardHeights
+          );
+          const newConn: RelationshipConnection = {
+            id: `conn-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+            fromId: connectingState.fromCardId,
+            toId: targetCard.id,
+            type: 'ally',
+            fromSide: connectingState.fromSide,
+            toSide,
+            isBidirectional: true,
+          };
+          updateMapData(mapData.cards, [...mapData.connections, newConn]);
+          setSelectedConnectionId(newConn.id);
+          setSelectedCardId(null);
+        }
+      }
+
+      setConnectingState(null);
+    };
+
+    window.addEventListener('pointermove', handleGlobalPointerMove);
+    window.addEventListener('pointerup', handleGlobalPointerUp);
+    window.addEventListener('pointercancel', handleGlobalPointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handleGlobalPointerMove);
+      window.removeEventListener('pointerup', handleGlobalPointerUp);
+      window.removeEventListener('pointercancel', handleGlobalPointerUp);
+    };
+  }, [connectingState, clientToCanvasCoords, cardMap, mapData.cards, mapData.connections, cardHeights, updateMapData]);
+
   // Unified Pointer Move on Canvas
   const handlePointerMoveCanvas = (e: React.PointerEvent) => {
     // 1. If dragging a connection handle
     if (connectingState) {
+      const clientX = e.clientX;
+      const clientY = e.clientY;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(() => {
-        const coords = clientToCanvasCoords(e.clientX, e.clientY);
+        const coords = clientToCanvasCoords(clientX, clientY);
         setConnectingState((prev) => (prev ? { ...prev, currentX: coords.x, currentY: coords.y } : null));
       });
       return;
@@ -704,10 +981,12 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
 
     // 2. If dragging a card
     if (draggingCard) {
+      const clientX = e.clientX;
+      const clientY = e.clientY;
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       rafRef.current = requestAnimationFrame(() => {
-        const dx = (e.clientX - draggingCard.startX) / zoom;
-        const dy = (e.clientY - draggingCard.startY) / zoom;
+        const dx = (clientX - draggingCard.startX) / zoom;
+        const dy = (clientY - draggingCard.startY) / zoom;
         const newX = Math.round(draggingCard.initialX + dx);
         const newY = Math.round(draggingCard.initialY + dy);
 
@@ -730,38 +1009,39 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
 
   // Unified Pointer Up on Canvas
   const handlePointerUpCanvas = (e: React.PointerEvent) => {
-    // Finish connection drag
+    // Finish connection drag fallback
     if (connectingState) {
       const coords = clientToCanvasCoords(e.clientX, e.clientY);
-      // Find card under pointer (excluding source card)
       const targetCard = mapData.cards.find((c) => {
         if (c.id === connectingState.fromCardId) return false;
         const w = c.width || CARD_WIDTH;
         const h = getActualCardHeight(c, cardHeights);
-        return coords.x >= c.x - 15 && coords.x <= c.x + w + 15 && coords.y >= c.y - 15 && coords.y <= c.y + h + 15;
+        return coords.x >= c.x - 24 && coords.x <= c.x + w + 24 && coords.y >= c.y - 24 && coords.y <= c.y + h + 24;
       });
 
       if (targetCard) {
-        // Determine target side closest to drop point
-        const { toSide } = getBestSides(
-          cardMap.get(connectingState.fromCardId)!,
-          targetCard,
-          connectingState.fromSide,
-          undefined,
-          cardHeights
-        );
-        const newConn: RelationshipConnection = {
-          id: `conn-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-          fromId: connectingState.fromCardId,
-          toId: targetCard.id,
-          type: 'ally',
-          fromSide: connectingState.fromSide,
-          toSide,
-          isBidirectional: true,
-        };
-        updateMapData(mapData.cards, [...mapData.connections, newConn]);
-        setSelectedConnectionId(newConn.id);
-        setSelectedCardId(null);
+        const fromCard = cardMap.get(connectingState.fromCardId);
+        if (fromCard) {
+          const { toSide } = getBestSides(
+            fromCard,
+            targetCard,
+            connectingState.fromSide,
+            undefined,
+            cardHeights
+          );
+          const newConn: RelationshipConnection = {
+            id: `conn-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+            fromId: connectingState.fromCardId,
+            toId: targetCard.id,
+            type: 'ally',
+            fromSide: connectingState.fromSide,
+            toSide,
+            isBidirectional: true,
+          };
+          updateMapData(mapData.cards, [...mapData.connections, newConn]);
+          setSelectedConnectionId(newConn.id);
+          setSelectedCardId(null);
+        }
       }
       setConnectingState(null);
     }
@@ -795,49 +1075,164 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
     : null;
 
   return (
-    <div className="relative w-full flex flex-col xl:flex-row justify-center items-center xl:items-start gap-5 px-1 sm:px-2">
+    <div className="relative w-full">
       {/* ========================================================================= */}
-      {/* 1. ANCHORED SIDEBAR MENU (Слева от листа со схемой, no-print) */}
+      {/* 1. MOBILE PLACEHOLDER (В мобильной версии схема недоступна, no-print) */}
       {/* ========================================================================= */}
-      <aside className="no-print w-full max-w-[340px] xl:w-80 shrink-0 sticky top-4 self-start z-20">
+      <div
+        className={`block sm:hidden no-print w-full max-w-lg mx-auto my-6 p-6 sm:p-8 rounded-xl border text-center transition-colors shadow-lg ${
+          isDark
+            ? 'bg-[#141418] border-red-950/60 text-zinc-200 shadow-black/80'
+            : 'bg-white border-zinc-300 text-zinc-900 shadow-zinc-400/25'
+        }`}
+      >
+        <div className="flex flex-col items-center justify-center gap-3 py-6">
+          <div
+            className="w-14 h-14 rounded-full flex items-center justify-center border-2 shadow-inner"
+            style={{
+              borderColor: accentColor || '#ef4444',
+              backgroundColor: (accentColor || '#ef4444') + '1a',
+              color: accentColor || '#ef4444',
+            }}
+          >
+            <Network className="w-7 h-7" />
+          </div>
+          <h3 className={`text-base sm:text-lg font-serif font-bold tracking-tight ${isDark ? 'text-white' : 'text-zinc-900'}`}>
+            В мобильной версии сайта схема отношений недоступна.
+          </h3>
+          <p className={`text-xs max-w-xs leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+            Для комфортного построения и редактирования диаграммы связей персонажей, котерий и доменов, пожалуйста, откройте сайт на планшете или компьютере.
+          </p>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2. TABLET & DESKTOP INTERACTIVE MAP (Доступна на планшетах, ПК и при печати) */}
+      {/* Лист имеет полную ширину A4. Кнопка и меню разворачиваются ПОВЕРХ листа. */}
+      {/* ========================================================================= */}
+      <div className="hidden sm:flex print:flex flex-col justify-center items-center px-1 sm:px-3 w-full pb-10">
+        {/* ========================================================================= */}
+        {/* THE VERTICAL PRINTABLE SHEET (Стандартный вертикальный лист А4) */}
+        {/* ========================================================================= */}
         <div
-          className={`w-full rounded-xl border p-4 shadow-xl transition-colors flex flex-col gap-3.5 backdrop-blur-md ${
+          className={`relative w-full max-w-[210mm] mx-auto p-3 sm:p-5 md:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-relationship flex flex-col justify-start ${
             isDark
-              ? 'bg-[#141418] border-zinc-750 text-zinc-200 shadow-black/80'
-              : 'bg-white border-zinc-300 text-zinc-900 shadow-xl shadow-zinc-400/25 ring-1 ring-zinc-200'
+              ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800'
+              : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
           }`}
+          style={{
+            boxShadow: isDark
+              ? '0 10px 35px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(153, 27, 27, 0.1)'
+              : '0 10px 30px -5px rgba(0, 0, 0, 0.15)',
+          }}
         >
-          {/* ------------------------------------------------------------- */}
-          {/* CASE 1: CONNECTION IN FOCUS (Кликнули на стрелку) */}
-          {/* ------------------------------------------------------------- */}
-          {focusedConnection ? (
-            <div className="space-y-3.5">
-              <div className={`flex items-center justify-between pb-2 border-b ${isDark ? 'border-zinc-700/60' : 'border-zinc-200'}`}>
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className="w-3 h-3 rounded-full shrink-0"
-                    style={{ backgroundColor: CONNECTION_STYLES[focusedConnection.type]?.color || '#ef4444' }}
-                  />
-                  <h3 className={`font-serif font-bold text-sm ${isDark ? 'text-white' : '!text-zinc-900'}`}>Настройка связи</h3>
-                </div>
+          <SheetHeader
+            pageTitle="Схема отношений"
+            themeMode={isDark ? 'dark' : 'light'}
+            accentColor={accentColor}
+            textColor={textColor}
+            primaryTextColor={primaryTextColor}
+            accentTextColor={accentTextColor}
+          />
+
+          {/* Canvas Area with Zoom/Pan controls, Obsidian Handles and Floating Sidebar */}
+          <div className="relative w-full my-1">
+            {/* Кнопка разворачивания меню схемы отношений, висящая поверх листа */}
+            {!isSidebarOpen && (
+              <div className="no-print absolute top-3 left-3 z-20">
                 <button
                   type="button"
-                  onClick={() => setSelectedConnectionId(null)}
-                  className={`p-1 rounded-md text-xs transition-colors cursor-pointer flex items-center gap-1 ${
-                    isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                  id="btn-open-map-sidebar"
+                  onClick={toggleSidebar}
+                  className={`px-3 py-2 rounded-xl border shadow-lg cursor-pointer transition-all flex items-center gap-2 font-serif font-semibold text-xs group backdrop-blur-md ${
+                    isDark
+                      ? 'bg-zinc-950/90 border-zinc-800 text-zinc-200 hover:bg-zinc-900 hover:text-white shadow-black/80'
+                      : 'bg-white/95 border-zinc-300 text-zinc-900 hover:bg-zinc-50 shadow-zinc-400/40'
                   }`}
+                  title="Развернуть меню схемы отношений поверх листа"
+                  aria-label="Развернуть меню схемы отношений поверх листа"
                 >
-                  <X className="w-3.5 h-3.5" />
-                  <span className="text-[11px]">Снять выбор</span>
+                  <SlidersHorizontal className="w-4 h-4 text-red-500 shrink-0 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs font-sans font-medium whitespace-nowrap">Меню схемы</span>
+                  <ChevronRight className="w-3.5 h-3.5 text-zinc-400 group-hover:translate-x-0.5 transition-transform shrink-0" />
                 </button>
               </div>
+            )}
 
-              {/* Connected Cards summary */}
-              <div className={`p-2 rounded border text-xs flex items-center justify-between ${
-                isDark ? 'bg-zinc-900/80 border-zinc-800 text-zinc-200' : 'bg-zinc-100 border-zinc-300 text-zinc-800'
-              }`}>
-                <div className="truncate font-serif">
-                  <strong className={`block truncate ${isDark ? 'text-white' : 'text-zinc-900'}`}>{cardMap.get(focusedConnection.fromId)?.name || 'А'}</strong>
+            {/* Меню схемы отношений, разворачивающееся поверх листа схемы без сужения самого листа */}
+            {isSidebarOpen && (
+              <aside
+                className="no-print absolute top-3 left-3 z-30 w-72 sm:w-80 max-w-[calc(100%-24px)] max-h-[82vh] overflow-y-auto no-scrollbar shadow-2xl rounded-xl transition-all"
+              >
+                <div
+                  className={`w-full rounded-xl border p-3.5 sm:p-4 shadow-2xl transition-all flex flex-col gap-3 backdrop-blur-xl ${
+                    isDark
+                      ? 'bg-[#141418]/95 border-zinc-750 text-zinc-200 shadow-black/95 ring-1 ring-white/5'
+                      : 'bg-white/95 border-zinc-300 text-zinc-900 shadow-xl shadow-zinc-400/25 ring-1 ring-zinc-200'
+                  }`}
+                >
+                  {/* Sidebar Top Bar: Title, Badges and Collapse Toggle */}
+                  <div className={`flex items-center justify-between pb-2 border-b ${isDark ? 'border-zinc-750' : 'border-zinc-200'}`}>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <SlidersHorizontal className="w-4 h-4 text-red-500 shrink-0" />
+                      <h3 className={`font-serif font-bold text-xs sm:text-sm tracking-tight ${isDark ? 'text-white' : 'text-zinc-900'}`}>
+                        Меню схемы
+                      </h3>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded font-sans border font-medium ${
+                        isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-400' : 'bg-zinc-100 border-zinc-300 text-zinc-600'
+                      }`}>
+                        {mapData.cards.length} карт. / {mapData.connections.length} связ.
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      id="btn-toggle-map-sidebar"
+                      onClick={toggleSidebar}
+                      className={`px-2 py-1 rounded text-xs font-serif font-medium cursor-pointer transition-all flex items-center gap-1 border shadow-2xs ${
+                        isDark
+                          ? 'bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border-zinc-700 hover:text-white'
+                          : 'bg-zinc-50 hover:bg-zinc-100 text-zinc-700 border-zinc-300 hover:text-black'
+                      }`}
+                      title="Свернуть меню"
+                      aria-label="Свернуть меню"
+                    >
+                      <ChevronLeft className="w-3.5 h-3.5 text-red-500" />
+                      <span className="text-[11px]">Свернуть</span>
+                    </button>
+                  </div>
+
+              {/* ------------------------------------------------------------- */}
+              {/* CASE 1: CONNECTION IN FOCUS (Кликнули на стрелку) */}
+              {/* ------------------------------------------------------------- */}
+                {focusedConnection ? (
+                  <div className="space-y-3.5">
+                    <div className={`flex items-center justify-between pb-2 border-b ${isDark ? 'border-zinc-700/60' : 'border-zinc-200'}`}>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="w-3 h-3 rounded-full shrink-0"
+                          style={{ backgroundColor: CONNECTION_STYLES[focusedConnection.type]?.color || '#ef4444' }}
+                        />
+                        <h3 className={`font-serif font-bold text-sm ${isDark ? 'text-white' : '!text-zinc-900'}`}>Настройка связи</h3>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedConnectionId(null)}
+                        className={`p-1 rounded-md text-xs transition-colors cursor-pointer flex items-center gap-1 ${
+                          isDark ? 'text-zinc-400 hover:text-white hover:bg-zinc-800' : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                        }`}
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span className="text-[11px]">Снять выбор</span>
+                      </button>
+                    </div>
+
+                    {/* Connected Cards summary */}
+                    <div className={`p-2 rounded border text-xs flex items-center justify-between ${
+                      isDark ? 'bg-zinc-900/80 border-zinc-800 text-zinc-200' : 'bg-zinc-100 border-zinc-300 text-zinc-800'
+                    }`}>
+                      <div className="truncate font-serif">
+                        <strong className={`block truncate ${isDark ? 'text-white' : 'text-zinc-900'}`}>{cardMap.get(focusedConnection.fromId)?.name || 'А'}</strong>
                   <span className={`text-[10px] ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>Начало ({focusedConnection.fromSide || 'сторона'})</span>
                 </div>
                 <ArrowRight className="w-4 h-4 text-red-500 shrink-0 mx-2" />
@@ -1253,33 +1648,8 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
           )}
         </div>
       </aside>
+    )}
 
-      {/* ========================================================================= */}
-      {/* 2. THE VERTICAL PRINTABLE SHEET (Стандартный вертикальный лист А4) */}
-      {/* ========================================================================= */}
-      <div
-        className={`relative w-full max-w-[210mm] shrink-0 p-4 sm:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-relationship flex flex-col justify-start ${
-          isDark
-            ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800'
-            : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
-        }`}
-        style={{
-          boxShadow: isDark
-            ? '0 10px 35px -5px rgba(0, 0, 0, 0.8), 0 0 15px rgba(153, 27, 27, 0.1)'
-            : '0 10px 30px -5px rgba(0, 0, 0, 0.15)',
-        }}
-      >
-        <SheetHeader
-          pageTitle="Схема отношений"
-          themeMode={isDark ? 'dark' : 'light'}
-          accentColor={accentColor}
-          textColor={textColor}
-          primaryTextColor={primaryTextColor}
-          accentTextColor={accentTextColor}
-        />
-
-        {/* Canvas Area with Zoom/Pan controls and Obsidian Handles */}
-        <div className="relative w-full my-1">
           {/* Floating Zoom & Pan Controls on Canvas (no-print) */}
           <div
             className={`no-print absolute top-3 right-3 z-20 flex items-center gap-1 backdrop-blur-md border rounded-lg p-1 shadow-md transition-colors ${
@@ -1525,6 +1895,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
                 return (
                   <div
                     key={card.id}
+                    data-card-id={card.id}
                     ref={(el) => {
                       if (el) registerCardHeight(card.id, el.offsetHeight);
                     }}
@@ -1536,68 +1907,111 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
                       willChange: 'transform',
                     }}
                     onPointerDown={(e) => handlePointerDownCard(card, e)}
-                    className={`absolute rounded-xl border p-2 transition-shadow shadow-md cursor-grab active:cursor-grabbing pointer-events-auto group ${
+                    className={`absolute rounded-xl border p-2 transition-all shadow-md cursor-grab active:cursor-grabbing pointer-events-auto group ${
                       isSelected
                         ? 'ring-2 ring-red-500 border-red-500 shadow-xl shadow-red-950/60'
+                        : connectingState && connectingState.fromCardId !== card.id
+                        ? isDark
+                          ? 'bg-[#18181c]/95 border-red-500/70 ring-2 ring-red-500/25 shadow-lg'
+                          : 'bg-white/95 border-red-400 ring-2 ring-red-400/25 shadow-lg'
                         : isDark
                         ? 'bg-[#18181c]/95 border-zinc-800 hover:border-zinc-700 hover:shadow-lg'
                         : 'bg-white/95 border-zinc-300 hover:border-zinc-400 hover:shadow-lg'
                     }`}
                   >
-                    {/* OBSIDIAN 4 EDGE HANDLES (Отображаются ТОЛЬКО при наведении курсора на карточку) */}
+                    {/* OBSIDIAN 4 EDGE HANDLES */}
                     <div className="no-print">
                       {/* Top Handle */}
-                      <button
-                        type="button"
+                      <div
                         onPointerDown={(e) => handlePointerDownHandle(card, 'top', e)}
-                        title="Потяните вверх для создания связи"
-                        className={`absolute -top-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-zinc-400 hover:bg-red-500 hover:scale-125 border ${
-                          isDark ? 'border-zinc-900' : 'border-white'
-                        } transition-all shadow cursor-crosshair ${
-                          connectingState?.fromCardId === card.id
-                            ? 'opacity-100 ring-2 ring-red-500 scale-110 pointer-events-auto'
+                        title="Потяните для создания связи"
+                        className={`absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 flex items-center justify-center cursor-crosshair z-30 transition-all ${
+                          isSelected || (connectingState?.fromCardId === card.id && connectingState.fromSide === 'top')
+                            ? 'opacity-100 pointer-events-auto'
+                            : connectingState
+                            ? 'opacity-80 pointer-events-auto'
                             : 'opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto'
                         }`}
-                      />
+                      >
+                        <div
+                          className={`w-3.5 h-3.5 rounded-full border shadow transition-transform group-hover:scale-125 ${
+                            connectingState?.fromCardId === card.id && connectingState.fromSide === 'top'
+                              ? 'bg-red-500 ring-2 ring-red-400 scale-125 border-white'
+                              : isDark
+                              ? 'bg-zinc-400 hover:bg-red-500 border-zinc-900'
+                              : 'bg-zinc-400 hover:bg-red-500 border-white'
+                          }`}
+                        />
+                      </div>
+
                       {/* Bottom Handle */}
-                      <button
-                        type="button"
+                      <div
                         onPointerDown={(e) => handlePointerDownHandle(card, 'bottom', e)}
-                        title="Потяните вниз для создания связи"
-                        className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3.5 h-3.5 rounded-full bg-zinc-400 hover:bg-red-500 hover:scale-125 border ${
-                          isDark ? 'border-zinc-900' : 'border-white'
-                        } transition-all shadow cursor-crosshair ${
-                          connectingState?.fromCardId === card.id
-                            ? 'opacity-100 ring-2 ring-red-500 scale-110 pointer-events-auto'
+                        title="Потяните для создания связи"
+                        className={`absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 flex items-center justify-center cursor-crosshair z-30 transition-all ${
+                          isSelected || (connectingState?.fromCardId === card.id && connectingState.fromSide === 'bottom')
+                            ? 'opacity-100 pointer-events-auto'
+                            : connectingState
+                            ? 'opacity-80 pointer-events-auto'
                             : 'opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto'
                         }`}
-                      />
+                      >
+                        <div
+                          className={`w-3.5 h-3.5 rounded-full border shadow transition-transform group-hover:scale-125 ${
+                            connectingState?.fromCardId === card.id && connectingState.fromSide === 'bottom'
+                              ? 'bg-red-500 ring-2 ring-red-400 scale-125 border-white'
+                              : isDark
+                              ? 'bg-zinc-400 hover:bg-red-500 border-zinc-900'
+                              : 'bg-zinc-400 hover:bg-red-500 border-white'
+                          }`}
+                        />
+                      </div>
+
                       {/* Left Handle */}
-                      <button
-                        type="button"
+                      <div
                         onPointerDown={(e) => handlePointerDownHandle(card, 'left', e)}
-                        title="Потяните влево для создания связи"
-                        className={`absolute -left-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-zinc-400 hover:bg-red-500 hover:scale-125 border ${
-                          isDark ? 'border-zinc-900' : 'border-white'
-                        } transition-all shadow cursor-crosshair ${
-                          connectingState?.fromCardId === card.id
-                            ? 'opacity-100 ring-2 ring-red-500 scale-110 pointer-events-auto'
+                        title="Потяните для создания связи"
+                        className={`absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center cursor-crosshair z-30 transition-all ${
+                          isSelected || (connectingState?.fromCardId === card.id && connectingState.fromSide === 'left')
+                            ? 'opacity-100 pointer-events-auto'
+                            : connectingState
+                            ? 'opacity-80 pointer-events-auto'
                             : 'opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto'
                         }`}
-                      />
+                      >
+                        <div
+                          className={`w-3.5 h-3.5 rounded-full border shadow transition-transform group-hover:scale-125 ${
+                            connectingState?.fromCardId === card.id && connectingState.fromSide === 'left'
+                              ? 'bg-red-500 ring-2 ring-red-400 scale-125 border-white'
+                              : isDark
+                              ? 'bg-zinc-400 hover:bg-red-500 border-zinc-900'
+                              : 'bg-zinc-400 hover:bg-red-500 border-white'
+                          }`}
+                        />
+                      </div>
+
                       {/* Right Handle */}
-                      <button
-                        type="button"
+                      <div
                         onPointerDown={(e) => handlePointerDownHandle(card, 'right', e)}
-                        title="Потяните вправо для создания связи"
-                        className={`absolute -right-1.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-zinc-400 hover:bg-red-500 hover:scale-125 border ${
-                          isDark ? 'border-zinc-900' : 'border-white'
-                        } transition-all shadow cursor-crosshair ${
-                          connectingState?.fromCardId === card.id
-                            ? 'opacity-100 ring-2 ring-red-500 scale-110 pointer-events-auto'
+                        title="Потяните для создания связи"
+                        className={`absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center cursor-crosshair z-30 transition-all ${
+                          isSelected || (connectingState?.fromCardId === card.id && connectingState.fromSide === 'right')
+                            ? 'opacity-100 pointer-events-auto'
+                            : connectingState
+                            ? 'opacity-80 pointer-events-auto'
                             : 'opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto'
                         }`}
-                      />
+                      >
+                        <div
+                          className={`w-3.5 h-3.5 rounded-full border shadow transition-transform group-hover:scale-125 ${
+                            connectingState?.fromCardId === card.id && connectingState.fromSide === 'right'
+                              ? 'bg-red-500 ring-2 ring-red-400 scale-125 border-white'
+                              : isDark
+                              ? 'bg-zinc-400 hover:bg-red-500 border-zinc-900'
+                              : 'bg-zinc-400 hover:bg-red-500 border-white'
+                          }`}
+                        />
+                      </div>
                     </div>
 
                     {/* Card Content Header */}
@@ -1641,25 +2055,32 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
                         </h4>
 
                         <div className="flex items-center gap-1 pt-0.5 flex-wrap">
-                          <span
-                            className={`text-[8.5px] px-1 py-0.2 rounded font-sans border font-medium ${typeConfig.badgeClass}`}
-                          >
-                            {typeConfig.label.split(' ')[0]}
-                          </span>
+                          {/* Type badge with dynamic contrast */}
+                          {(() => {
+                            const badgeStyle = getBadgeContrastStyle(typeConfig.color, isDark);
+                            return (
+                              <span
+                                className="text-[8.5px] px-1.5 py-0.5 rounded font-sans border font-semibold tracking-wide"
+                                style={badgeStyle}
+                              >
+                                {typeConfig.label.split(' ')[0]}
+                              </span>
+                            );
+                          })()}
 
-                          {/* Clan badge ONLY for PC and NPC characters */}
-                          {(card.type === 'pc' || card.type === 'npc') && clanData && (
-                            <span
-                              className="text-[8.5px] px-1 py-0.2 rounded font-serif border font-medium truncate max-w-[75px]"
-                              style={{
-                                borderColor: clanData.accentColor + '80',
-                                color: clanData.accentColor,
-                                backgroundColor: clanData.accentColor + '18',
-                              }}
-                            >
-                              {clanData.name}
-                            </span>
-                          )}
+                          {/* Clan badge with dynamic contrast ONLY for PC and NPC characters */}
+                          {(card.type === 'pc' || card.type === 'npc') && (card.customClanName || clanData) && (() => {
+                            const clanColor = clanData?.accentColor || '#ef4444';
+                            const badgeStyle = getBadgeContrastStyle(clanColor, isDark);
+                            return (
+                              <span
+                                className="text-[8.5px] px-1.5 py-0.5 rounded font-serif border font-semibold truncate max-w-[85px]"
+                                style={badgeStyle}
+                              >
+                                {card.customClanName || clanData?.name}
+                              </span>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -1691,6 +2112,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

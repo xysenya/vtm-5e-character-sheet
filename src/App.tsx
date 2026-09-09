@@ -60,6 +60,7 @@ import {
 import { GoogleAuthModal } from './components/v5/GoogleAuthModal';
 import { GoogleDriveSaveModal } from './components/v5/GoogleDriveSaveModal';
 import { GoogleDriveManagerModal } from './components/v5/GoogleDriveManagerModal';
+import { MobileWarningModal } from './components/MobileWarningModal';
 
 
 export default function App() {
@@ -190,6 +191,18 @@ export default function App() {
   const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
   const [showAppSettingsModal, setShowAppSettingsModal] = useState<boolean>(false);
   const [showCreationCalc, setShowCreationCalc] = useState<boolean>(false);
+
+  // Mobile limitation warning modal (shown once if window is mobile and not dismissed)
+  const [showMobileWarning, setShowMobileWarning] = useState<boolean>(() => {
+    try {
+      if (typeof window === 'undefined') return false;
+      const isMobile = window.innerWidth < 640;
+      const dismissed = localStorage.getItem('vtm_dismiss_mobile_warning') === 'true';
+      return isMobile && !dismissed;
+    } catch {
+      return false;
+    }
+  });
 
   // Print Calibration widget state (disabled by default)
   const [showPrintCalibrator, setShowPrintCalibrator] = useState<boolean>(() => {
@@ -1101,6 +1114,12 @@ export default function App() {
           isDark={isDarkTheme}
         />
       )}
+
+      {/* Mobile limitation warning modal */}
+      <MobileWarningModal
+        isOpen={showMobileWarning}
+        onClose={() => setShowMobileWarning(false)}
+      />
 
       {/* Custom Alert Modal (replaces window.alert) */}
       <AlertModal

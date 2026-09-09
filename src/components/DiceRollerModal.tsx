@@ -253,8 +253,20 @@ export const DiceRollerModal: React.FC<DiceRollerModalProps> = ({
           <div className="pt-2">
             <div className="flex justify-between text-xs text-zinc-300 mb-1">
               <span>Сложность (Difficulty): <strong className="text-red-400 font-bold text-sm font-mono">{difficulty}</strong></span>
-              <span className="text-zinc-500 font-sans">
-                {difficulty <= 1 ? 'Легко' : difficulty === 2 ? 'Стандарт' : difficulty === 3 ? 'Сложно' : difficulty === 4 ? 'Очень сложно' : 'Экстремально'}
+              <span className="text-zinc-400 font-sans">
+                {difficulty === 1
+                  ? 'Элементарная'
+                  : difficulty === 2
+                  ? 'Простая'
+                  : difficulty === 3
+                  ? 'Непростая'
+                  : difficulty === 4
+                  ? 'Серьёзная'
+                  : difficulty === 5
+                  ? 'Сложная'
+                  : difficulty === 6
+                  ? 'Невероятно сложная'
+                  : 'Почти невыполнимая'}
               </span>
             </div>
             <input
