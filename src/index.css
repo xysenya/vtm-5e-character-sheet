@@ -373,10 +373,10 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     print-color-adjust: exact !important;
   }
 
-  body:not(.print-ink-saver) .sheet-theme-light textarea,
-  body:not(.print-ink-saver) .sheet-theme-light .print-white-bg,
-  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) textarea,
-  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) .print-white-bg {
+  body:not(.print-ink-saver) .sheet-theme-light textarea:not(.notebook-ruled-textarea),
+  body:not(.print-ink-saver) .sheet-theme-light .print-white-bg:not(.notebook-ruled-textarea),
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) textarea:not(.notebook-ruled-textarea),
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) .print-white-bg:not(.notebook-ruled-textarea) {
     border-color: #999999 !important;
     color: #000000 !important;
     background-color: #ffffff !important;
@@ -408,18 +408,24 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     background: transparent !important;
   }
 
+  body:not(.print-ink-saver) .sheet-theme-light .notebook-ruled-textarea,
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) .notebook-ruled-textarea,
   body:not(.print-ink-saver) .sheet-theme-light textarea.notebook-ruled-textarea,
-  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) textarea.notebook-ruled-textarea {
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) textarea.notebook-ruled-textarea,
+  body:not(.print-ink-saver) .sheet-theme-light div.notebook-ruled-textarea,
+  body:not(.print-ink-saver) .page-break:not(.sheet-theme-dark) div.notebook-ruled-textarea {
     background-color: #ffffff !important;
-    background-image: linear-gradient(to bottom, transparent 27px, #d1d5db 27px, #d1d5db 28px) !important;
+    background-image: linear-gradient(to bottom, transparent 27px, rgba(153, 27, 27, 0.28) 27px, rgba(153, 27, 27, 0.28) 28px) !important;
     background-size: 100% 28px !important;
     background-origin: content-box !important;
     background-position: 0 0 !important;
     background-repeat: repeat-y !important;
     line-height: 28px !important;
     color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    border-color: #a1a1aa !important;
   }
 
   body:not(.print-ink-saver) .sheet-theme-light input:not(.match-sheet-bg):not(.vtm-skill-specialty-input):not(.vtm-merit-input):not(.vtm-flaw-input):not(.vtm-kindred-info-input),
@@ -437,7 +443,7 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
   }
 
   body:not(.print-ink-saver) .sheet-theme-light textarea:not(.notebook-ruled-textarea),
-  body:not(.print-ink-saver) .sheet-theme-light .print-white-bg {
+  body:not(.print-ink-saver) .sheet-theme-light .print-white-bg:not(.notebook-ruled-textarea) {
     border-color: #d4d4d8 !important;
     color: #18181b !important;
     background-color: #ffffff !important;
@@ -474,8 +480,8 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     print-color-adjust: exact !important;
   }
 
-  body:not(.print-ink-saver) .sheet-theme-dark textarea,
-  body:not(.print-ink-saver) .sheet-theme-dark .print-white-bg {
+  body:not(.print-ink-saver) .sheet-theme-dark textarea:not(.notebook-ruled-textarea),
+  body:not(.print-ink-saver) .sheet-theme-dark .print-white-bg:not(.notebook-ruled-textarea) {
     border-color: #3f3f46 !important;
     color: #f4f4f5 !important;
     background-color: #18181b !important;
@@ -499,17 +505,21 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     background: transparent !important;
   }
 
-  body:not(.print-ink-saver) .sheet-theme-dark textarea.notebook-ruled-textarea {
+  body:not(.print-ink-saver) .sheet-theme-dark .notebook-ruled-textarea,
+  body:not(.print-ink-saver) .sheet-theme-dark textarea.notebook-ruled-textarea,
+  body:not(.print-ink-saver) .sheet-theme-dark div.notebook-ruled-textarea {
     background-color: #141416 !important;
-    background-image: linear-gradient(to bottom, transparent 27px, rgba(153, 27, 27, 0.35) 27px, rgba(153, 27, 27, 0.35) 28px) !important;
+    background-image: linear-gradient(to bottom, transparent 27px, rgba(220, 38, 38, 0.35) 27px, rgba(220, 38, 38, 0.35) 28px) !important;
     background-size: 100% 28px !important;
     background-origin: content-box !important;
     background-position: 0 0 !important;
     background-repeat: repeat-y !important;
     line-height: 28px !important;
     color: #f4f4f5 !important;
+    -webkit-text-fill-color: #f4f4f5 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    border-color: #3f3f46 !important;
   }
 
   body:not(.print-ink-saver) .sheet-theme-dark .text-red-500,
@@ -531,9 +541,9 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
   /* Option: Keep text fields light during dark theme print */
   body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark input:not(.match-sheet-bg):not(.vtm-skill-specialty-input):not(.vtm-merit-input):not(.vtm-flaw-input):not(.vtm-kindred-info-input),
   body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark select,
-  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark textarea:not(.match-sheet-bg):not(.vtm-kindred-info-input),
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark textarea:not(.match-sheet-bg):not(.vtm-kindred-info-input):not(.notebook-ruled-textarea),
   body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .header-info-field,
-  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .print-white-bg {
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .print-white-bg:not(.notebook-ruled-textarea) {
     background-color: #ffffff !important;
     background: #ffffff !important;
     color: #000000 !important;
@@ -551,11 +561,21 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: transparent !important;
     background: transparent !important;
   }
-  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark textarea.notebook-ruled-textarea {
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .notebook-ruled-textarea,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark textarea.notebook-ruled-textarea,
+  body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark div.notebook-ruled-textarea {
     background-color: #ffffff !important;
-    background-image: linear-gradient(to bottom, transparent 27px, #d1d5db 27px, #d1d5db 28px) !important;
+    background-image: linear-gradient(to bottom, transparent 27px, rgba(153, 27, 27, 0.28) 27px, rgba(153, 27, 27, 0.28) 28px) !important;
+    background-size: 100% 28px !important;
+    background-origin: content-box !important;
+    background-position: 0 0 !important;
+    background-repeat: repeat-y !important;
+    line-height: 28px !important;
     color: #000000 !important;
     -webkit-text-fill-color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    border-color: #9ca3af !important;
   }
   /* Disciplines cards and powers in Dark Theme with Light Fields option */
   body:not(.print-ink-saver).print-light-text-fields .sheet-theme-dark .print-calib-disc-card,
@@ -733,8 +753,8 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     border-color: #999999 !important;
   }
 
-  body.print-ink-saver textarea,
-  body.print-ink-saver .print-white-bg {
+  body.print-ink-saver textarea:not(.notebook-ruled-textarea),
+  body.print-ink-saver .print-white-bg:not(.notebook-ruled-textarea) {
     background-color: #ffffff !important;
     background: #ffffff !important;
     color: #000000 !important;
@@ -746,11 +766,21 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     background: transparent !important;
   }
 
-  body.print-ink-saver textarea.notebook-ruled-textarea {
+  body.print-ink-saver .notebook-ruled-textarea,
+  body.print-ink-saver textarea.notebook-ruled-textarea,
+  body.print-ink-saver div.notebook-ruled-textarea {
     background-color: #ffffff !important;
-    background-image: linear-gradient(to bottom, transparent 27px, #d1d5db 27px, #d1d5db 28px) !important;
+    background-image: linear-gradient(to bottom, transparent 27px, #9ca3af 27px, #9ca3af 28px) !important;
     background-size: 100% 28px !important;
+    background-origin: content-box !important;
+    background-position: 0 0 !important;
+    background-repeat: repeat-y !important;
+    line-height: 28px !important;
     color: #000000 !important;
+    -webkit-text-fill-color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    border-color: #9ca3af !important;
   }
 
   /* In ink-saver print: checked dots become solid black, unchecked dots are crisp outlines */
@@ -772,6 +802,24 @@ body.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: #ffffff !important;
     border-color: #666666 !important;
     color: #000000 !important;
+  }
+
+  /* Page 4: Notebook Ruled Notes container on print */
+  .sheet-page-4 .print-rich-textarea-wrapper {
+    height: 100% !important;
+    min-height: 240mm !important;
+    flex: 1 1 auto !important;
+  }
+  .sheet-page-4.sheet-page-4-continuation .print-rich-textarea-wrapper {
+    min-height: 260mm !important;
+  }
+  .sheet-page-4 .notebook-ruled-textarea {
+    min-height: 240mm !important;
+    height: 100% !important;
+    overflow: visible !important;
+  }
+  .sheet-page-4.sheet-page-4-continuation .notebook-ruled-textarea {
+    min-height: 260mm !important;
   }
 }
 

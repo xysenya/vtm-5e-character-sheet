@@ -500,7 +500,7 @@ export const RichTextarea = forwardRef<HTMLDivElement, RichTextareaProps>(
 
     return (
       <div
-        className={`relative flex flex-col w-full ${resolvedHeight ? '' : 'flex-1 min-h-0'}`}
+        className={`relative flex flex-col w-full print-rich-textarea-wrapper ${resolvedHeight ? '' : 'flex-1 min-h-0'}`}
         style={{
           minHeight: resolvedMinHeight,
           height: resolvedHeight,

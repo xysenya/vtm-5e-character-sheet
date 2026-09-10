@@ -276,6 +276,8 @@ export default function App() {
   const bioHeight = printCalibration.bioHeight;
   const inventoryHeight = printCalibration.inventoryHeight;
   const relationshipMapHeight = printCalibration.relationshipMapHeight;
+  const rulesLineHeight = printCalibration.rulesLineHeight ?? 1.5;
+  const rulesFontSize = printCalibration.rulesFontSize ?? 11.5;
   const notesHeight = 880;
 
   // Custom alert & confirm modal states (Replacing browser window.alert & window.confirm)
@@ -892,6 +894,8 @@ export default function App() {
               textColor={sheet.customTheme?.textColor}
               primaryTextColor={customColors?.textPrimary}
               accentTextColor={customColors?.textAccent}
+              rulesLineHeight={rulesLineHeight}
+              rulesFontSize={rulesFontSize}
             />
           </div>
         ) : activePage === 1 ? (
@@ -955,6 +959,8 @@ export default function App() {
             textColor={sheet.customTheme?.textColor}
             primaryTextColor={customColors?.textPrimary}
             accentTextColor={customColors?.textAccent}
+            rulesLineHeight={rulesLineHeight}
+            rulesFontSize={rulesFontSize}
           />
         )}
       </main>

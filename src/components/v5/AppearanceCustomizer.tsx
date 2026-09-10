@@ -304,8 +304,16 @@ export const AppearanceCustomizer: React.FC<AppearanceCustomizerProps> = ({
           }
 
           /* Notebook paper ruling lines on SheetPage4 */
-          .page-break textarea.notebook-ruled-textarea {
+          .page-break .notebook-ruled-textarea,
+          .page-break textarea.notebook-ruled-textarea,
+          .page-break div.notebook-ruled-textarea {
             background-image: linear-gradient(to bottom, transparent 27px, ${customColors.graphicsAccent}44 27px, ${customColors.graphicsAccent}44 28px) !important;
+            background-size: 100% 28px !important;
+            background-origin: content-box !important;
+            background-repeat: repeat-y !important;
+            line-height: 28px !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
 
           /* Discipline cards and container panels */

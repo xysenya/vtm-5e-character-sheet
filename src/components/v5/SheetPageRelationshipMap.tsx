@@ -558,7 +558,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
   textColor,
   primaryTextColor,
   accentTextColor,
-  relationshipMapHeight = 820,
+  relationshipMapHeight = 930,
 }) => {
   // Ensure relationshipMap is initialized with at least the current player character if completely empty
   const mapData = useMemo(() => {
@@ -624,7 +624,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
       const cardCenterX = targetCard.x + cardWidth / 2;
       const cardCenterY = targetCard.y + cardHeight / 2;
       const estViewportW = 740;
-      const estViewportH = relationshipMapHeight || 820;
+      const estViewportH = relationshipMapHeight || 930;
       return {
         x: Math.round(estViewportW / 2 - cardCenterX),
         y: Math.round(estViewportH / 2 - cardCenterY),
@@ -1213,7 +1213,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
       {/* 2. TABLET & DESKTOP INTERACTIVE MAP (Доступна на планшетах, ПК и при печати) */}
       {/* Лист имеет полную ширину A4. Кнопка и меню разворачиваются ПОВЕРХ листа. */}
       {/* ========================================================================= */}
-      <div className="hidden sm:flex print:flex flex-col xl:flex-row justify-center items-center xl:items-start gap-4 xl:gap-6 px-1 sm:px-3 w-full pb-10">
+      <div className="hidden sm:flex print:flex flex-col xl:flex-row justify-center items-center xl:items-start gap-4 xl:gap-6 px-1 sm:px-3 w-full pb-10 print:p-0 print:m-0 print:gap-0 print:pb-0">
         {/* ========================================================================= */}
         {/* DESKTOP SIDEBAR (Слева от листа персонажа, ВСЕГДА развернуто на ПК) */}
         {/* ========================================================================= */}
@@ -1258,7 +1258,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
         {/* THE VERTICAL PRINTABLE SHEET (Стандартный вертикальный лист А4) */}
         {/* ========================================================================= */}
         <div
-          className={`relative w-full max-w-[210mm] mx-auto xl:mx-0 p-3 sm:p-5 md:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-relationship flex flex-col justify-start ${
+          className={`relative w-full max-w-[210mm] min-h-[297mm] mx-auto xl:mx-0 p-3 sm:p-5 md:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-relationship print:p-0 print:m-0 print:max-w-full print:w-full print:min-h-0 print:h-auto print:overflow-visible flex flex-col justify-start ${
             isDark
               ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800'
               : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
@@ -1808,7 +1808,7 @@ export const SheetPageRelationshipMap: React.FC<SheetPageRelationshipMapProps> =
           </div>
 
           {/* Bottom helper tip */}
-          <div className={`flex items-center justify-between text-[10.5px] font-serif pt-1.5 px-1 ${
+          <div className={`no-print flex items-center justify-between text-[10.5px] font-serif pt-1.5 px-1 ${
             isDark ? 'text-zinc-400' : 'text-zinc-600'
           }`}>
             <span className="flex items-center gap-1">

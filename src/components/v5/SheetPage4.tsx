@@ -325,7 +325,7 @@ export const SheetPage4: React.FC<SheetPage4Props> = ({
               value={pages[0] || ''}
               onChange={(val) => handleTextChange(0, val as any)}
               placeholder={ph('Сюда можно записывать союзников, долги, тайны, цели сессий и события хроники...')}
-              className={`flex-1 print:min-h-[250mm] print:h-[250mm] w-full border rounded-xs font-serif text-sm leading-7 transition-colors overflow-y-auto notebook-ruled-textarea print-white-bg ${
+              className={`flex-1 print:min-h-[250mm] print:h-[250mm] w-full border rounded-xs font-serif text-sm leading-7 transition-colors overflow-y-auto notebook-ruled-textarea ${
                 isDark
                   ? 'dark-ruled bg-zinc-900/90 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus:border-red-500'
                   : 'bg-white border-zinc-400 text-zinc-900 placeholder:text-zinc-400 focus:border-red-700'
@@ -345,7 +345,7 @@ export const SheetPage4: React.FC<SheetPage4Props> = ({
         return (
           <div
             key={`notes-continuation-${actualIndex}`}
-            className={`relative w-full max-w-[210mm] min-h-[297mm] mx-auto p-4 sm:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-4 print:p-0 print:m-0 print:max-w-full print:w-full print:min-h-0 print:h-auto print:overflow-visible flex flex-col justify-start ${
+            className={`relative w-full max-w-[210mm] min-h-[297mm] mx-auto p-4 sm:p-6 mb-8 rounded-sm shadow-xl transition-colors page-break sheet-page-4 sheet-page-4-continuation print:p-0 print:m-0 print:max-w-full print:w-full print:min-h-0 print:h-auto print:overflow-visible flex flex-col justify-start ${
               isDark
                 ? 'sheet-theme-dark bg-[#0f0f11] text-zinc-100 border border-zinc-800'
                 : 'sheet-theme-light bg-[#faf8f5] text-zinc-900 border border-zinc-300'
@@ -395,7 +395,7 @@ export const SheetPage4: React.FC<SheetPage4Props> = ({
                 value={pageText}
                 onChange={(val) => handleTextChange(actualIndex, val as any)}
                 placeholder={ph(`Продолжение заметок хроники (лист ${pageNumber})...`)}
-                className={`flex-1 print:min-h-[265mm] print:h-[265mm] w-full border rounded-xs font-serif text-sm leading-7 transition-colors overflow-y-auto notebook-ruled-textarea print-white-bg ${
+                className={`flex-1 print:min-h-[265mm] print:h-[265mm] w-full border rounded-xs font-serif text-sm leading-7 transition-colors overflow-y-auto notebook-ruled-textarea ${
                   isDark
                     ? 'dark-ruled bg-zinc-900/90 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus:border-red-500'
                     : 'bg-white border-zinc-400 text-zinc-900 placeholder:text-zinc-400 focus:border-red-700'

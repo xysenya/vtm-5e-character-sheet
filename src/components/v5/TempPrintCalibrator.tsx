@@ -2,17 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Printer, RotateCcw, Copy, Check, ChevronDown, ChevronUp, Sliders, X, FileText, LayoutGrid } from 'lucide-react';
 
 export interface CalibrationState {
-  titleSize: number;        // Размер надписи "ВАМПИРЫ: МАСКАРАД" (px)
-  disciplineHeight: number; // Высота блока дисциплин (px)
-  meritsRows: number;       // Количество строк преимуществ/недостатков
-  bioHeight: number;        // Высота блоков "Внешность" и "История" (px)
-  inventoryHeight: number;  // Высота блока "Инвентарь" (px)
+  titleSize: number;             // Размер надписи "ВАМПИРЫ: МАСКАРАД" (px)
+  disciplineHeight: number;      // Высота блока дисциплин (px)
+  meritsRows: number;            // Количество строк преимуществ/недостатков
+  bioHeight: number;             // Высота блоков "Внешность" и "История" (px)
+  inventoryHeight: number;       // Высота блока "Инвентарь" (px)
   relationshipMapHeight: number; // Высота блока схемы отношений (px)
-  page1Gap: number;         // Отступы Стр. 1 (px)
-  page2Gap: number;         // Отступы Стр. 2 (px)
-  page3Gap: number;         // Отступы Стр. 3 (px)
-  page4Gap: number;         // Отступы Стр. 4 (px)
-  page5Gap: number;         // Отступы Стр. 5 (px)
+  rulesLineHeight: number;       // Высота строк памятки правил (множитель, по умолч. 1.25)
+  rulesFontSize: number;         // Размер шрифта подсказок (px, по умолч. 10.5)
+  page1Gap: number;              // Отступы Стр. 1 (px)
+  page2Gap: number;              // Отступы Стр. 2 (px)
+  page3Gap: number;              // Отступы Стр. 3 (px)
+  page4Gap: number;              // Отступы Стр. 4 (px)
+  page5Gap: number;              // Отступы Стр. 5 (Схема отношений) (px)
+  page6Gap: number;              // Отступы Стр. 6 (Памятка правил V5) (px)
 }
 
 export const DEFAULT_CALIBRATION: CalibrationState = {
@@ -21,12 +24,15 @@ export const DEFAULT_CALIBRATION: CalibrationState = {
   meritsRows: 17,
   bioHeight: 280,
   inventoryHeight: 140,
-  relationshipMapHeight: 820,
+  relationshipMapHeight: 930,
+  rulesLineHeight: 1.5,
+  rulesFontSize: 11.5,
   page1Gap: 9,
   page2Gap: 5,
   page3Gap: 9,
-  page4Gap: 9,
-  page5Gap: 5,
+  page4Gap: 5,
+  page5Gap: 8,
+  page6Gap: 2,
 };
 
 export const loadSavedCalibration = (): CalibrationState => {
@@ -34,10 +40,15 @@ export const loadSavedCalibration = (): CalibrationState => {
     const saved = localStorage.getItem('vtm_temp_print_calibration');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // If user had the previous initial defaults (titleSize 21, disciplineHeight 136), upgrade to the new defaults
+      // If user had the previous initial defaults, upgrade to the new defaults
       if (
-        (parsed.titleSize === 21 || !parsed.titleSize) &&
-        (parsed.disciplineHeight === 136 || !parsed.disciplineHeight)
+        (parsed.titleSize === 21 || !parsed.titleSize || parsed.titleSize === 24) &&
+        (parsed.disciplineHeight === 136 || !parsed.disciplineHeight || parsed.disciplineHeight === 150) &&
+        (parsed.rulesLineHeight === 1.25 || !parsed.rulesLineHeight || parsed.rulesLineHeight === 1.5) &&
+        (parsed.rulesFontSize === 10.5 || !parsed.rulesFontSize || parsed.rulesFontSize === 11.5) &&
+        (parsed.page4Gap === 9 || !parsed.page4Gap || parsed.page4Gap === 5) &&
+        (parsed.page6Gap === 5 || !parsed.page6Gap || parsed.page6Gap === 2) &&
+        (parsed.relationshipMapHeight === 820 || !parsed.relationshipMapHeight || parsed.relationshipMapHeight === 930)
       ) {
         try {
           localStorage.setItem('vtm_temp_print_calibration', JSON.stringify(DEFAULT_CALIBRATION));
@@ -45,18 +56,39 @@ export const loadSavedCalibration = (): CalibrationState => {
         return DEFAULT_CALIBRATION;
       }
       const legacyGap = typeof parsed.verticalGap === 'number' ? parsed.verticalGap : DEFAULT_CALIBRATION.page1Gap;
+
+      // Handle migration: if page6Gap is not defined, previously page5Gap was for rules (now page 6)
+      const page6Gap = typeof parsed.page6Gap === 'number'
+        ? (parsed.page6Gap === 5 ? DEFAULT_CALIBRATION.page6Gap : parsed.page6Gap)
+        : (typeof parsed.page5Gap === 'number' && parsed.page5Gap !== 8 ? parsed.page5Gap : DEFAULT_CALIBRATION.page6Gap);
+
+      const page5Gap = typeof parsed.page6Gap === 'number' && typeof parsed.page5Gap === 'number'
+        ? parsed.page5Gap
+        : DEFAULT_CALIBRATION.page5Gap;
+
       const updated: CalibrationState = {
         titleSize: typeof parsed.titleSize === 'number' ? parsed.titleSize : DEFAULT_CALIBRATION.titleSize,
         disciplineHeight: typeof parsed.disciplineHeight === 'number' ? parsed.disciplineHeight : DEFAULT_CALIBRATION.disciplineHeight,
         meritsRows: typeof parsed.meritsRows === 'number' ? parsed.meritsRows : DEFAULT_CALIBRATION.meritsRows,
         bioHeight: typeof parsed.bioHeight === 'number' ? parsed.bioHeight : DEFAULT_CALIBRATION.bioHeight,
         inventoryHeight: typeof parsed.inventoryHeight === 'number' ? parsed.inventoryHeight : DEFAULT_CALIBRATION.inventoryHeight,
-        relationshipMapHeight: typeof parsed.relationshipMapHeight === 'number' ? parsed.relationshipMapHeight : DEFAULT_CALIBRATION.relationshipMapHeight,
+        relationshipMapHeight: typeof parsed.relationshipMapHeight === 'number'
+          ? (parsed.relationshipMapHeight === 820 ? DEFAULT_CALIBRATION.relationshipMapHeight : parsed.relationshipMapHeight)
+          : DEFAULT_CALIBRATION.relationshipMapHeight,
+        rulesLineHeight: typeof parsed.rulesLineHeight === 'number'
+          ? (parsed.rulesLineHeight === 1.25 ? DEFAULT_CALIBRATION.rulesLineHeight : parsed.rulesLineHeight)
+          : DEFAULT_CALIBRATION.rulesLineHeight,
+        rulesFontSize: typeof parsed.rulesFontSize === 'number'
+          ? (parsed.rulesFontSize === 10.5 ? DEFAULT_CALIBRATION.rulesFontSize : parsed.rulesFontSize)
+          : DEFAULT_CALIBRATION.rulesFontSize,
         page1Gap: typeof parsed.page1Gap === 'number' ? parsed.page1Gap : legacyGap,
         page2Gap: typeof parsed.page2Gap === 'number' ? parsed.page2Gap : legacyGap,
         page3Gap: typeof parsed.page3Gap === 'number' ? parsed.page3Gap : legacyGap,
-        page4Gap: typeof parsed.page4Gap === 'number' ? parsed.page4Gap : legacyGap,
-        page5Gap: typeof parsed.page5Gap === 'number' ? (parsed.page5Gap === 9 ? 5 : parsed.page5Gap) : DEFAULT_CALIBRATION.page5Gap,
+        page4Gap: typeof parsed.page4Gap === 'number'
+          ? (parsed.page4Gap === 9 ? DEFAULT_CALIBRATION.page4Gap : parsed.page4Gap)
+          : DEFAULT_CALIBRATION.page4Gap,
+        page5Gap,
+        page6Gap,
       };
       try {
         localStorage.setItem('vtm_temp_print_calibration', JSON.stringify(updated));
@@ -103,7 +135,10 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
   };
 
   const updateField = (field: keyof CalibrationState, val: number) => {
-    const safeVal = Math.max(1, isNaN(val) ? 0 : val);
+    let minVal = 1;
+    if (field === 'rulesLineHeight') minVal = 0.8;
+    if (field === 'rulesFontSize') minVal = 7;
+    const safeVal = Math.max(minVal, isNaN(val) ? minVal : val);
     updateState({
       ...state,
       [field]: safeVal,
@@ -122,12 +157,16 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
       `3. Строки преимуществ/недостатков: ${state.meritsRows} строк`,
       `4. Высота блоков Внешность/История: ${state.bioHeight}px`,
       `5. Высота блока Инвентарь: ${state.inventoryHeight}px`,
-      `6. Вертикальные отступы по страницам:`,
+      `6. Высота холста схемы отношений: ${state.relationshipMapHeight}px`,
+      `7. Высота строк памятки правил (Стр. 6): ${state.rulesLineHeight}`,
+      `8. Размер шрифта памятки правил (Стр. 6): ${state.rulesFontSize}px`,
+      `9. Вертикальные отступы по страницам:`,
       `   - Стр. 1 (Основные): ${state.page1Gap}px`,
       `   - Стр. 2 (Кровь и Преимущества): ${state.page2Gap}px`,
       `   - Стр. 3 (Биография): ${state.page3Gap}px`,
       `   - Стр. 4 (Заметки): ${state.page4Gap}px`,
-      `   - Стр. 5 (Правила): ${state.page5Gap}px`,
+      `   - Стр. 5 (Схема отношений): ${state.page5Gap}px`,
+      `   - Стр. 6 (Памятка правил V5): ${state.page6Gap}px`,
     ].join('\n');
 
     navigator.clipboard?.writeText(text);
@@ -265,7 +304,7 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
             min-height: ${state.inventoryHeight}px !important;
           }
 
-          /* 6. СТРАНИЦА 4: Вертикальные отступы */
+          /* 6. СТРАНИЦА 4: Вертикальные отступы и разметка заметок */
           .sheet-page-4 .print-calib-header {
             margin-bottom: ${Math.round(state.page4Gap * 1.2)}px !important;
             padding-bottom: ${Math.round(state.page4Gap * 0.8)}px !important;
@@ -277,30 +316,81 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
           .sheet-page-4 .print-calib-p4-notes-container {
             margin-top: ${state.page4Gap}px !important;
           }
+          .sheet-page-4 .notebook-ruled-textarea {
+            background-size: 100% 28px !important;
+            background-origin: content-box !important;
+            background-repeat: repeat-y !important;
+            line-height: 28px !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
 
-          /* 7. СТРАНИЦА 5: Вертикальные отступы */
-          .sheet-page-5 .print-calib-header {
+          /* 7. СТРАНИЦА 5: Схема отношений */
+          .sheet-page-relationship .print-calib-header {
             margin-bottom: ${Math.round(state.page5Gap * 1.2)}px !important;
             padding-bottom: ${Math.round(state.page5Gap * 0.8)}px !important;
           }
-          .sheet-page-5 .print-calib-section-divider {
-            margin-top: ${state.page5Gap}px !important;
-            margin-bottom: ${state.page5Gap}px !important;
-          }
-          .sheet-page-5 .print-calib-p5-rules-stack {
-            row-gap: ${state.page5Gap}px !important;
-            margin-top: ${state.page5Gap}px !important;
-            margin-bottom: ${state.page5Gap}px !important;
-          }
-          .sheet-page-5 .print-calib-p5-rules-card {
-            padding: ${Math.max(6, Math.round(state.page5Gap * 1.5))}px !important;
-          }
-
-          /* 8. Схема отношений: Высота холста при печати */
+          .sheet-page-relationship .sheet-relationship-canvas-area,
           .sheet-page-relationship .print-calib-relationship-canvas {
             height: ${state.relationshipMapHeight}px !important;
             min-height: ${state.relationshipMapHeight}px !important;
             max-height: ${state.relationshipMapHeight}px !important;
+            margin-top: ${state.page5Gap}px !important;
+            margin-bottom: ${state.page5Gap}px !important;
+          }
+
+          /* 8. СТРАНИЦА 6: Памятка правил V5 */
+          .sheet-page-5 .print-calib-header,
+          .sheet-page-6 .print-calib-header {
+            margin-bottom: ${Math.round(state.page6Gap * 0.8)}px !important;
+            padding-bottom: ${Math.round(state.page6Gap * 0.5)}px !important;
+          }
+          .sheet-page-5 .print-calib-section-divider,
+          .sheet-page-6 .print-calib-section-divider {
+            margin-top: ${Math.round(state.page6Gap * 0.7)}px !important;
+            margin-bottom: ${Math.round(state.page6Gap * 0.7)}px !important;
+          }
+          .sheet-page-5 .print-calib-p5-rules-stack,
+          .sheet-page-6 .print-calib-p5-rules-stack {
+            row-gap: ${state.page6Gap}px !important;
+            gap: ${state.page6Gap}px !important;
+            margin-top: ${Math.min(4, state.page6Gap)}px !important;
+            margin-bottom: ${Math.min(4, state.page6Gap)}px !important;
+            page-break-inside: auto !important;
+            break-inside: auto !important;
+          }
+          .sheet-page-5 .print-calib-p5-rules-card,
+          .sheet-page-6 .print-calib-p5-rules-card {
+            padding: ${Math.max(4, Math.round(state.page6Gap * 1.0))}px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            line-height: ${state.rulesLineHeight} !important;
+            font-size: ${state.rulesFontSize}px !important;
+          }
+          .sheet-page-5 .print-calib-p5-rules-card ul,
+          .sheet-page-6 .print-calib-p5-rules-card ul,
+          .sheet-page-5 .print-calib-p5-rules-card li,
+          .sheet-page-6 .print-calib-p5-rules-card li,
+          .sheet-page-5 .print-calib-p5-rules-card table,
+          .sheet-page-6 .print-calib-p5-rules-card table,
+          .sheet-page-5 .print-calib-p5-rules-card td,
+          .sheet-page-6 .print-calib-p5-rules-card td {
+            line-height: ${state.rulesLineHeight} !important;
+            font-size: ${state.rulesFontSize}px !important;
+          }
+          .sheet-page-5 .print-calib-p5-rules-card th,
+          .sheet-page-6 .print-calib-p5-rules-card th {
+            line-height: ${state.rulesLineHeight} !important;
+            font-size: ${Math.max(8, state.rulesFontSize - 1.5)}px !important;
+          }
+          .sheet-page-5 .print-calib-p5-rules-card td,
+          .sheet-page-6 .print-calib-p5-rules-card td {
+            padding-top: ${Math.max(1, Math.round((state.rulesLineHeight - 1.0) * 8))}px !important;
+            padding-bottom: ${Math.max(1, Math.round((state.rulesLineHeight - 1.0) * 8))}px !important;
+          }
+          .sheet-page-5 .print-calib-p5-rules-card li,
+          .sheet-page-6 .print-calib-p5-rules-card li {
+            margin-bottom: ${Math.max(0, Math.round((state.rulesLineHeight - 1.05) * 8))}px !important;
           }
         }
       `}</style>
@@ -571,7 +661,7 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
                     {/* Control 6: Relationship Map Height */}
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-[11px] font-serif">
-                        <span className="font-medium">6. Высота схемы отношений (Стр. 5)</span>
+                        <span className="font-medium">6. Холст схемы отношений (Стр. 5)</span>
                         <span className="font-mono text-red-500 font-bold">{state.relationshipMapHeight} px</span>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -601,6 +691,89 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
                           +
                         </button>
                       </div>
+                      <p className="text-[10px] text-zinc-500 italic">
+                        Высота холста схемы на экране и при печати на лист А4 (по умолч. 930 px)
+                      </p>
+                    </div>
+
+                    {/* Control 7: Rules Line Height */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[11px] font-serif">
+                        <span className="font-medium">7. Высота строк памятки правил (Стр. 6)</span>
+                        <span className="font-mono text-red-500 font-bold">{state.rulesLineHeight.toFixed(2)}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateField('rulesLineHeight', Math.max(0.85, +(state.rulesLineHeight - 0.05).toFixed(2)))}
+                          className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                          title="Уменьшить высоту строк на 0.05"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="number"
+                          step={0.05}
+                          min={0.85}
+                          max={2.2}
+                          value={state.rulesLineHeight}
+                          onChange={(e) => updateField('rulesLineHeight', parseFloat(e.target.value) || DEFAULT_CALIBRATION.rulesLineHeight)}
+                          className={`flex-1 h-7 text-center font-mono text-xs border rounded px-1 font-bold ${
+                            isDark ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-zinc-50 border-zinc-300 text-black'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateField('rulesLineHeight', Math.min(2.2, +(state.rulesLineHeight + 0.05).toFixed(2)))}
+                          className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                          title="Увеличить высоту строк на 0.05"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-zinc-500 italic">
+                        Межстрочный интервал и высота строк подсказок (по умолч. 1.25)
+                      </p>
+                    </div>
+
+                    {/* Control 8: Rules Font Size */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[11px] font-serif">
+                        <span className="font-medium">8. Размер шрифта подсказок (Стр. 6)</span>
+                        <span className="font-mono text-red-500 font-bold">{state.rulesFontSize.toFixed(1)} px</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateField('rulesFontSize', Math.max(7.5, +(state.rulesFontSize - 0.5).toFixed(1)))}
+                          className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                          title="Уменьшить размер шрифта на 0.5 px"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="number"
+                          step={0.5}
+                          min={7.5}
+                          max={16}
+                          value={state.rulesFontSize}
+                          onChange={(e) => updateField('rulesFontSize', parseFloat(e.target.value) || DEFAULT_CALIBRATION.rulesFontSize)}
+                          className={`flex-1 h-7 text-center font-mono text-xs border rounded px-1 font-bold ${
+                            isDark ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-zinc-50 border-zinc-300 text-black'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateField('rulesFontSize', Math.min(16, +(state.rulesFontSize + 0.5).toFixed(1)))}
+                          className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                          title="Увеличить размер шрифта на 0.5 px"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-zinc-500 italic">
+                        Базовый размер шрифта текста подсказок правил (по умолч. 10.5 px)
+                      </p>
                     </div>
                   </>
                 ) : (
@@ -737,10 +910,10 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
                       </div>
                     </div>
 
-                    {/* Page 5 Gap */}
+                    {/* Page 5 Gap: Relationship Map */}
                     <div className="space-y-1">
                       <div className="flex items-center justify-between text-[11px] font-serif">
-                        <span className="font-medium">Стр. 5: Памятка правил V5</span>
+                        <span className="font-medium">Стр. 5: Схема отношений</span>
                         <span className="font-mono text-red-500 font-bold">{state.page5Gap} px</span>
                       </div>
                       <div className="flex items-center gap-1.5">
@@ -748,6 +921,7 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
                           type="button"
                           onClick={() => updateField('page5Gap', state.page5Gap - 1)}
                           className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                          title="Уменьшить на 1 px"
                         >
                           −
                         </button>
@@ -763,9 +937,170 @@ export const TempPrintCalibrator: React.FC<TempPrintCalibratorProps> = ({
                           type="button"
                           onClick={() => updateField('page5Gap', state.page5Gap + 1)}
                           className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                          title="Увеличить на 1 px"
                         >
                           +
                         </button>
+                      </div>
+                      <p className="text-[10px] text-zinc-500 italic">
+                        Отступы шапки и холста схемы отношений при печати (по умолч. 8 px)
+                      </p>
+
+                      {/* Sub-control: Page 5 Canvas Height */}
+                      <div className="pt-2 border-t border-zinc-800/60 mt-1.5 space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-serif">
+                          <span className="font-medium text-zinc-300">Высота холста схемы</span>
+                          <span className="font-mono text-red-500 font-bold">{state.relationshipMapHeight} px</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateField('relationshipMapHeight', Math.max(300, state.relationshipMapHeight - 20))}
+                            className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                            title="Уменьшить высоту холста на 20 px"
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            step={20}
+                            min={300}
+                            max={1200}
+                            value={state.relationshipMapHeight}
+                            onChange={(e) => updateField('relationshipMapHeight', parseInt(e.target.value, 10) || DEFAULT_CALIBRATION.relationshipMapHeight)}
+                            className={`flex-1 h-7 text-center font-mono text-xs border rounded px-1 font-bold ${
+                              isDark ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-zinc-50 border-zinc-300 text-black'
+                            }`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => updateField('relationshipMapHeight', Math.min(1200, state.relationshipMapHeight + 20))}
+                            className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                            title="Увеличить высоту холста на 20 px"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-zinc-500 italic">
+                          Высота холста схемы отношений на странице и при печати (по умолч. 930 px)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Page 6 Gap: Rules Reference */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between text-[11px] font-serif">
+                        <span className="font-medium">Стр. 6: Памятка правил V5</span>
+                        <span className="font-mono text-red-500 font-bold">{state.page6Gap} px</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => updateField('page6Gap', state.page6Gap - 1)}
+                          className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                          title="Уменьшить на 1 px"
+                        >
+                          −
+                        </button>
+                        <input
+                          type="number"
+                          value={state.page6Gap}
+                          onChange={(e) => updateField('page6Gap', parseInt(e.target.value, 10))}
+                          className={`flex-1 h-7 text-center font-mono text-xs border rounded px-1 font-bold ${
+                            isDark ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-zinc-50 border-zinc-300 text-black'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => updateField('page6Gap', state.page6Gap + 1)}
+                          className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                          title="Увеличить на 1 px"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-zinc-500 italic">
+                        Отступы шапки и блоков памятки правил (по умолч. 5 px)
+                      </p>
+
+                      {/* Sub-control: Page 6 Line Height */}
+                      <div className="pt-2 border-t border-zinc-800/60 mt-1.5 space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-serif">
+                          <span className="font-medium text-zinc-300">Высота строк (Line-Height)</span>
+                          <span className="font-mono text-red-500 font-bold">{state.rulesLineHeight.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateField('rulesLineHeight', Math.max(0.85, +(state.rulesLineHeight - 0.05).toFixed(2)))}
+                            className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                            title="Уменьшить высоту строк на 0.05"
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            step={0.05}
+                            min={0.85}
+                            max={2.2}
+                            value={state.rulesLineHeight}
+                            onChange={(e) => updateField('rulesLineHeight', parseFloat(e.target.value) || DEFAULT_CALIBRATION.rulesLineHeight)}
+                            className={`flex-1 h-7 text-center font-mono text-xs border rounded px-1 font-bold ${
+                              isDark ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-zinc-50 border-zinc-300 text-black'
+                            }`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => updateField('rulesLineHeight', Math.min(2.2, +(state.rulesLineHeight + 0.05).toFixed(2)))}
+                            className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                            title="Увеличить высоту строк на 0.05"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-zinc-500 italic">
+                          Межстрочный интервал текста памятки правил (по умолч. 1.25)
+                        </p>
+                      </div>
+
+                      {/* Sub-control: Page 6 Font Size */}
+                      <div className="pt-2 border-t border-zinc-800/60 mt-1.5 space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-serif">
+                          <span className="font-medium text-zinc-300">Размер шрифта (Font-Size)</span>
+                          <span className="font-mono text-red-500 font-bold">{state.rulesFontSize.toFixed(1)} px</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => updateField('rulesFontSize', Math.max(7.5, +(state.rulesFontSize - 0.5).toFixed(1)))}
+                            className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                            title="Уменьшить размер шрифта на 0.5 px"
+                          >
+                            −
+                          </button>
+                          <input
+                            type="number"
+                            step={0.5}
+                            min={7.5}
+                            max={16}
+                            value={state.rulesFontSize}
+                            onChange={(e) => updateField('rulesFontSize', parseFloat(e.target.value) || DEFAULT_CALIBRATION.rulesFontSize)}
+                            className={`flex-1 h-7 text-center font-mono text-xs border rounded px-1 font-bold ${
+                              isDark ? 'bg-zinc-900 border-zinc-700 text-white' : 'bg-zinc-50 border-zinc-300 text-black'
+                            }`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => updateField('rulesFontSize', Math.min(16, +(state.rulesFontSize + 0.5).toFixed(1)))}
+                            className="w-8 h-7 rounded border border-red-900/40 hover:bg-red-600 hover:text-white flex items-center justify-center font-bold text-sm transition-colors active:scale-95 cursor-pointer"
+                            title="Увеличить размер шрифта на 0.5 px"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-zinc-500 italic">
+                          Размер шрифта текста памятки правил (по умолч. 10.5 px)
+                        </p>
                       </div>
                     </div>
                   </>
